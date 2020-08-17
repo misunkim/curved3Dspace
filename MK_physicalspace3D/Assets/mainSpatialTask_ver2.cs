@@ -23,8 +23,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 	public GameObject img_fullscreen;
 
 	public GameObject debriefHolder;
-	public GameObject[] debriefQ, debriefQ2;//debrief dropdown question and debrief text inputfield questions
-	public Text[] debrief_textfield; //debrief free writing question
+	public GameObject[] debriefQ, debriefQ2;//debrief dropdown questions(debrieefQ) and debrief text inputfield questions(debriefQ2)
 	
 	public Slider timerSlider;
 	public GameObject distEstimateHolder, distEstHolder_2AFC;
@@ -118,8 +117,9 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		text_topleft.text="";
 		
 		curr_norm2D=phy2DtoNorm2D(char2D);
-		initialiseObjList();
-    	yield return startOfExp();
+	/*	yield return initialiseObjList();
+    
+		yield return startOfExp();
 		yield return propFollowingTask();
 		yield return objectLocationLearnPhase();
 
@@ -134,14 +134,16 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		yield return objectDistEstimate_egocentric();
 		yield return objectDistEstimate_pairwise();
 		yield return objectDistEstimate_2AFC();
-	
+	*/
+		Debug.Log("debriefQ4 char limit="+debriefQ2[0].GetComponentInChildren<InputField>().characterLimit);
+		Debug.Log("debriefQ7 char limit="+debriefQ2[1].GetComponentInChildren<InputField>().characterLimit);
 		yield return debriefPhase();
 		yield return endOfExp();
 	
 	//	yield return triangleCompletionTask();
 	}
 	
-	void initialiseObjList(){
+	IEnumerator initialiseObjList(){
 		// set the object identity for each participant differently
 		// using the base object identity, name and then sort it accordingly
 		int[] objIdentity=json2int(taskparam["objIdentity"]);
@@ -163,6 +165,8 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		string demostr="sex"+sex+",age"+age;
 		
 		StartCoroutine(save2file(savefn,demostr+"\n"+strObjName));
+
+		yield return null;
 		/*
 		// place some cone object
 		// then set start and target location for goal?
@@ -1197,14 +1201,14 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		for (int i=0; i<debriefQ.Length; i++)
 		{	debrief_dropdown[i]=debriefQ[i].GetComponentInChildren<Dropdown>();
 			debrief_q[i]=debriefQ[i].GetComponent<Text>().text;
-			Debug.Log(debrief_dropdown[i].options[1].text);
+		//	Debug.Log(debrief_dropdown[i].options[1].text);
 		}
 
-		Text[] debrief_inputfield=new Text[debriefQ2.Length];
+		InputField[] debrief_inputfield=new InputField[debriefQ2.Length];
 		string[] debrief_q2=new string[debriefQ2.Length];
 		for (int i=0; i<debriefQ2.Length; i++)
 		{	debrief_q2[i]=debriefQ2[i].GetComponent<Text>().text;
-			debrief_inputfield[i]=debriefQ2[i].transform.Find("InputField/Text").GetComponent<Text>();
+			debrief_inputfield[i]=debriefQ2[i].GetComponentInChildren<InputField>();
 		}
 		nextButton.gameObject.SetActive(true);
 		
@@ -1213,17 +1217,18 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		{   if (moveToNext==1)
 			{    moveToNext=0; // reset the move To Next button
 				
-				bool isdropdownSelected=true;
+				bool isAllAnswered=true;
 				string sumtext="";
 				for (int i=0;i<debrief_dropdown.Length;i++)
-				{	isdropdownSelected=isdropdownSelected&(debrief_dropdown[i].value!=0);
+				{	isAllAnswered=isAllAnswered&(debrief_dropdown[i].value!=0);
 					sumtext=sumtext+debrief_q[i]+"\n"+debrief_dropdown[i].options[debrief_dropdown[i].value].text+"\n";
 				}
 				for (int i=0;i<debrief_inputfield.Length;i++)
-				{	isdropdownSelected=isdropdownSelected&(debrief_inputfield[i].text!="");
+				{	Debug.Log("debrief_inputfield:"+debrief_inputfield[i].text);
+					isAllAnswered=isAllAnswered&(debrief_inputfield[i].text!="");
 					sumtext=sumtext+debrief_q2[i]+"\n"+debrief_inputfield[i].text+"\n";
 				}
-				if (isdropdownSelected)
+				if (isAllAnswered)
 				{	StartCoroutine(save2file(savefn, sumtext));
 					custombreakCondition=1;
 				}
