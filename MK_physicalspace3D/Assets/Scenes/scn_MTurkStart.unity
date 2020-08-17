@@ -1256,7 +1256,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -227, y: -244}
+  m_AnchoredPosition: {x: -227, y: -394.1}
   m_SizeDelta: {x: 800, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &353782298
@@ -1671,13 +1671,17 @@ MonoBehaviour:
     is a part of my ongoing research project at the Max Planck Institute for Human
     Cognitive and Brain Sciences, Leipzig, Germany (approved by local ethics committee,
     284/20-ek, main researcher: Dr. Misun Kim).\n\n<b>In this experiment, you will
-    explore 3D virtual environments and do various spatial memory task.</b> Your response
-    (e.g. accuracy and speed during memory tests) and basic demographic information
+    explore 3D virtual environments and do various spatial memory task as if playing
+    a simple computer game.</b><color=red> Those who have motion sickness or never
+    played computer games before might feel some dizziness or nausea during this experiment.
+    Don't participate if you are succeptible to motion sickness and if you experience
+    any discomfort during the experiment, stop the experiment immediately. </color>
+    \n\nYour response (e.g. accuracy in the memory tests) and basic demographic information
     (age, sex) will be stored and used for the purpose of scientific research. You
     can find the detailed information about the ethics and data processing in the
-    separate pdf file which you can download.\n\nPlease tick the box if you would
-    like to participate in this study. \n\nYou can withdraw from the study at any
-    time if you want. "
+    separate pdf file (click download button). \n\n<color=blue>Please tick the box
+    if you would like to participate in this study.</color> \nYou can withdraw from
+    the study at any time if you want. "
 --- !u!222 &474989086
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6216,7 +6220,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 529, y: 0}
+  m_AnchoredPosition: {x: 529, y: -172.3}
   m_SizeDelta: {x: 160, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1804009084
