@@ -1,0 +1,17 @@
+<size=36>
+Welcome! Thanks for volunteering in my research. Your participation will contribute to the better understanding of<b> spatial cognition in 3D.</b> This is a part of my ongoing research project at the Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany (approved by local ethics committee, ethics number TBA: main researcher: Dr. Misun Kim).
+
+<b>In this experiment, you will explore 3D virtual environments and do various spatial memory task.</b> Your response (e.g. accuracy and speed during memory tests) and basic demographic information (age, sex) will be stored and used for the purpose of scientific research. </size>
+
+<size=30>*Data protection</size>
+<size=24>All data are transferred, saved and processed in pseudonymized form first (i.e. your MTurk ID for payment). Once the data collection is finished and data quality is checked, the data will be fully anonymised (i.e. any link between the data and ID will be deleted). You have the right to request information on or a copy of all data stored about you, and request its deletion, rectification or restrict its processing. However, once the data are fully anonymized it won't be possible to stop processing of, request information on, delete or correct the collected data anymore. If you have any additional questions regarding data protection, please contact Heidi Schuster, the data protection officer of the Max Planck Society (Hofgartenstrasse 8, D-80539 München, datenschutz@mpg.de).If you wish to make a complaint, you may file this with the relevant data protection regulatory authority, which in your case is Bayerisches Landesamt für Datenschutzaufsicht (BayLDA), Promenade 27, D-91522 Ansbach, poststelle@lda.bayern.de.   
+</size>
+<size=36>
+If you have any question, please contact Dr. Misun Kim (mkim@cbs.mpg.de). 
+
+If you are happy to take part in this online study, click the 'Next' 
+
+(You can withdraw from the study at any time if you want.) 
+
+<b>Important:</b> <color=blue><i>Please read the instruction of each task carefully. Your work can be rejected if you don't follow the instruction.</i> </color> 
+</size>

@@ -1,0 +1,192 @@
+fileFormatVersion: 2
+guid: 82f303546a4944a2ab4925dbd82f3cf1
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: group_0
+    100002: group_1
+    100004: group_10
+    100006: group_2
+    100008: group_3
+    100010: group_4
+    100012: group_5
+    100014: group_6
+    100016: group_7
+    100018: group_8
+    100020: group_9
+    100022: ID104
+    100024: ID131
+    100026: ID193
+    100028: ID26
+    100030: ID62
+    100032: ID75
+    100034: ID88
+    100036: ID96
+    100038: //RootNode
+    100040: skp_camera_Last_Saved_SketchUp_View
+    400000: group_0
+    400002: group_1
+    400004: group_10
+    400006: group_2
+    400008: group_3
+    400010: group_4
+    400012: group_5
+    400014: group_6
+    400016: group_7
+    400018: group_8
+    400020: group_9
+    400022: ID104
+    400024: ID131
+    400026: ID193
+    400028: ID26
+    400030: ID62
+    400032: ID75
+    400034: ID88
+    400036: ID96
+    400038: //RootNode
+    400040: skp_camera_Last_Saved_SketchUp_View
+    2000000: skp_camera_Last_Saved_SketchUp_View
+    2100000: Pavers_Stone_Walk
+    2100002: Pavers_Herringbone_Brick
+    2100004: Groundcover_Sand_Raked
+    2100006: material
+    2100008: Small_Aggregate
+    2100010: Pavers_Herringbone_Brick_0
+    2100012: material_1
+    2100014: Pavers_Square_Brick
+    2100016: Pavers_Driveway_Brick
+    2300000: group_0
+    2300002: group_1
+    2300004: group_10
+    2300006: group_2
+    2300008: group_3
+    2300010: group_4
+    2300012: group_5
+    2300014: group_6
+    2300016: group_7
+    2300018: group_8
+    2300020: group_9
+    2300022: ID104
+    2300024: ID131
+    2300026: ID193
+    2300028: ID62
+    2300030: ID75
+    2300032: ID88
+    2300034: ID96
+    3300000: group_0
+    3300002: group_1
+    3300004: group_10
+    3300006: group_2
+    3300008: group_3
+    3300010: group_4
+    3300012: group_5
+    3300014: group_6
+    3300016: group_7
+    3300018: group_8
+    3300020: group_9
+    3300022: ID104
+    3300024: ID131
+    3300026: ID193
+    3300028: ID62
+    3300030: ID75
+    3300032: ID88
+    3300034: ID96
+    4300000: group_0
+    4300002: group_1
+    4300004: group_2
+    4300006: group_3
+    4300008: ID62
+    4300010: ID75
+    4300012: ID88
+    4300014: ID96
+    4300016: ID104
+    4300018: group_4
+    4300020: ID131
+    4300022: group_5
+    4300024: group_6
+    4300026: group_7
+    4300028: group_8
+    4300030: group_9
+    4300032: group_10
+    4300034: ID193
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.0254
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

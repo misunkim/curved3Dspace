@@ -1,0 +1,301 @@
+fileFormatVersion: 2
+guid: 7120abed0afe94d2c8ad51184721d74c
+SketchUpImporter:
+  generateBackFace: 0
+  mergeCoplanarFaces: 0
+  selectedNodes: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d0000000e0000000f000000100000001100000012000000130000001400000015000000160000001700000018000000190000001a0000001b0000001c0000001d0000001e0000001f00000020000000210000002200000023000000
+  assetHash:
+    serializedVersion: 2
+    Hash: f49aec8ba458cd9830ecbef3fd9ee02b
+  longitude: -105.242139
+  latitude: 40.018309
+  northCorrection: -0
+  fileUnit: 0
+  sketchUpImportData:
+    defaultCamera:
+      position: {x: 60.866447, y: 97.95503, z: -160.03242}
+      lookAt: {x: -1.7129765, y: 7.855551, z: 27.774412}
+      up: {x: -0.1309555, y: 0.9101615, z: 0.39300996}
+      fov: 35
+      aspectRatio: 0
+      orthoSize: 1
+      isPerspective: 1
+    scenes: []
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: Group 1
+    100002: Group 11
+    100004: Group 5
+    100006: Group 7
+    100008: Group 9
+    100010: //RootNode
+    100012: Group 3
+    100014: Group 10
+    100016: Group 12
+    100018: Group 14
+    100020: Group 16
+    100022: Group 18
+    100024: Group 2
+    100026: Group 20
+    100028: Group 22
+    100030: Group 24
+    100032: Group 26
+    100034: Group 28
+    100036: Group 30
+    100038: Group 32
+    100040: Group 34
+    100042: Group 4
+    100044: Group 6
+    100046: Group 8
+    400000: Group 1
+    400002: Group 11
+    400004: Group 5
+    400006: Group 7
+    400008: Group 9
+    400010: //RootNode
+    400012: Group 3
+    400014: Group 10
+    400016: Group 12
+    400018: Group 14
+    400020: Group 16
+    400022: Group 18
+    400024: Group 2
+    400026: Group 20
+    400028: Group 22
+    400030: Group 24
+    400032: Group 26
+    400034: Group 28
+    400036: Group 30
+    400038: Group 32
+    400040: Group 34
+    400042: Group 4
+    400044: Group 6
+    400046: Group 8
+    2100000: '[Grass Dark Green]'
+    2100002: '[Vegetation Grass]'
+    2100004: '[Granite Light Gray]'
+    2100006: '[Stone Marble]'
+    2100008: '[Metal Steel Textured White]'
+    2100010: '[Pavers Flagstone Gray]'
+    2100012: '[Rough Square Concrete Block]'
+    2300000: Group 1
+    2300002: Group 11
+    2300004: Group 5
+    2300006: Group 7
+    2300008: Group 9
+    2300010: Group 3
+    2300012: Group 10
+    2300014: Group 12
+    2300016: Group 14
+    2300018: Group 16
+    2300020: Group 18
+    2300022: Group 2
+    2300024: Group 20
+    2300026: Group 22
+    2300028: Group 24
+    2300030: Group 26
+    2300032: Group 28
+    2300034: Group 30
+    2300036: Group 32
+    2300038: Group 34
+    2300040: Group 4
+    2300042: Group 6
+    2300044: Group 8
+    2300046: //RootNode
+    3300000: Group 1
+    3300002: Group 11
+    3300004: Group 5
+    3300006: Group 7
+    3300008: Group 9
+    3300010: Group 3
+    3300012: Group 10
+    3300014: Group 12
+    3300016: Group 14
+    3300018: Group 16
+    3300020: Group 18
+    3300022: Group 2
+    3300024: Group 20
+    3300026: Group 22
+    3300028: Group 24
+    3300030: Group 26
+    3300032: Group 28
+    3300034: Group 30
+    3300036: Group 32
+    3300038: Group 34
+    3300040: Group 4
+    3300042: Group 6
+    3300044: Group 8
+    3300046: //RootNode
+    4300000: Mesh Group 1
+    4300002: Mesh Group 5
+    4300004: Mesh Group 7
+    4300006: Mesh Group 9
+    4300008: Mesh Group 11
+    4300010: Mesh Group 3
+    4300012: Mesh jshape_withCeiling
+    4300014: Mesh Group 2
+    4300016: Mesh Group 4
+    4300018: Mesh Group 6
+    4300020: Mesh Group 8
+    4300022: Mesh Group 10
+    4300024: Mesh Group 12
+    4300026: Mesh Group 14
+    4300028: Mesh Group 16
+    4300030: Mesh Group 18
+    4300032: Mesh Group 20
+    4300034: Mesh Group 22
+    4300036: Mesh Group 24
+    4300038: Mesh Group 26
+    4300040: Mesh Group 28
+    4300042: Mesh Group 30
+    4300044: Mesh Group 32
+    4300046: Mesh Group 34
+    6400000: Group 10
+    6400002: Group 12
+    6400004: Group 14
+    6400006: Group 16
+    6400008: Group 18
+    6400010: Group 2
+    6400012: Group 20
+    6400014: Group 22
+    6400016: Group 24
+    6400018: Group 26
+    6400020: Group 28
+    6400022: Group 30
+    6400024: Group 32
+    6400026: Group 34
+    6400028: Group 4
+    6400030: Group 6
+    6400032: Group 8
+    6400034: //RootNode
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Concrete Form 4x8]'
+    second: {fileID: 2100000, guid: 84d9664fec13a4b26af985b28152e54d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Granite Light Gray]'
+    second: {fileID: 2100000, guid: 2ce2b4853db4243448b811b1794bafa5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Grass Dark Green]'
+    second: {fileID: 2100000, guid: 6de276001ae8f4d8b9b42697992cdc48, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Metal Steel Textured White]'
+    second: {fileID: 2100000, guid: 0064e7e567b2740578bd107eee57b2b2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Pavers Flagstone Gray]'
+    second: {fileID: 2100000, guid: 530db22c17bbf4c9482bcb7a47c625cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Rough Square Concrete Block]'
+    second: {fileID: 2100000, guid: cad282ef1064946bf8b05d8b4b25a4e3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Stone Marble]'
+    second: {fileID: 2100000, guid: 4eb235a6016724d0993584f9b5de9772, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Translucent Glass Safety]'
+    second: {fileID: 2100000, guid: 775530539d0be4b5ca710dbafca6caa1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: '[Vegetation Grass]'
+    second: {fileID: 2100000, guid: ea4dd8acaf5f44687b7ca12a18a866f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: _defaultMat
+    second: {fileID: 2100000, guid: 118c77004501d46dc88212ed730e823f, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 2
+    materialSearch: 0
+    materialLocation: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.0254
+    meshCompression: 0
+    addColliders: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
