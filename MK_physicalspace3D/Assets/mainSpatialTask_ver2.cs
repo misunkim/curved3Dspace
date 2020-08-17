@@ -13,7 +13,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
-
+// git commit test 2020/08/17 16:36
 public class mainSpatialTask_ver2 : MonoBehaviour {
 	public int moveToNext=0;
 	// GUI elements
