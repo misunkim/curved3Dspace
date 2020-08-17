@@ -104,8 +104,16 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		
 		if (the_JSON_string=="") //if I fail to load the json task param from the server, find it from Resources directory
 		{	TextAsset jsonTextAsset= Resources.Load<TextAsset>(subId+"_inputParam");
-			Debug.Log("load Resources/"+subId+"_inputParam");
-			the_JSON_string=jsonTextAsset.text;
+			if (jsonTextAsset!=null){
+				Debug.Log("load Resources/"+subId+"_inputParam");
+				the_JSON_string=jsonTextAsset.text;
+			}
+			else{
+				text_warning.gameObject.SetActive(true);
+				text_warning.text="Fatal error! can't proceed to experiment. Contact the experimenter Dr.Misun Kim (mkim@cbs.mpg.de)";	
+				Debug.Log("fail to load the input csv file");
+				
+			}
 		}
 		taskparam = JSON.Parse(the_JSON_string);
 		
@@ -117,7 +125,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		text_topleft.text="";
 		
 		curr_norm2D=phy2DtoNorm2D(char2D);
-	/*	yield return initialiseObjList();
+		yield return initialiseObjList();
     
 		yield return startOfExp();
 		yield return propFollowingTask();
@@ -134,9 +142,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		yield return objectDistEstimate_egocentric();
 		yield return objectDistEstimate_pairwise();
 		yield return objectDistEstimate_2AFC();
-	*/
-		Debug.Log("debriefQ4 char limit="+debriefQ2[0].GetComponentInChildren<InputField>().characterLimit);
-		Debug.Log("debriefQ7 char limit="+debriefQ2[1].GetComponentInChildren<InputField>().characterLimit);
+	
 		yield return debriefPhase();
 		yield return endOfExp();
 	
@@ -203,7 +209,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 	void Update () {
 		if (moveConstraint==1) // update the locationon the flattened surface(2D) and then translate into 3D
 		{
-			if (Input.GetKeyDown(KeyCode.Alpha3))
+		/*	if (Input.GetKeyDown(KeyCode.Alpha3))
 				StartCoroutine(simulTrans(new Vector3(-0.8f,0.2f,45), new Vector3(-0.4f,0.6f,45)));			
 			if (Input.GetKeyDown(KeyCode.Alpha4))
 				StartCoroutine(simulTrans(new Vector3(0.2f,0.2f,45), new Vector3(0.6f,0.6f,45)));
@@ -211,7 +217,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 				StartCoroutine(simulRot(new Vector3(-0.8f,0.2f,45), new Vector3(-0.8f,0.2f,135)));		
 			if (Input.GetKeyDown(KeyCode.Alpha6))
 				StartCoroutine(simulRot(new Vector3(0.2f,0.2f,45), new Vector3(0.2f,0.2f,135)));
-			
+		*/	
 			if (rotateAllow){	
 				char2D.Rotate(0, Input.GetAxis("Horizontal") * rotateSpeed*Time.deltaTime, 0);
 			}
@@ -516,7 +522,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		string savefn=subId+"_familiarisation_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		string savetext="";
 		
-		
+		maxtrial=pos2DList.Length-1;
 		trial=1;
 		while (Time.time-inittime<timelimit & trial<pos2DList.Length){
 			text_topright.text=trial+"/"+(pos2DList.Length-1);
@@ -546,7 +552,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			//savetext=savetext+Time.time.ToString("F3")+deli+MK2string(character.position)+deli+MK2string(character.rotation)+deli+cameraPitch.ToString("F1")+"\n";
 			savetext=savetext+trial+deli+Time.time.ToString("F3")+deli+MK2string(curr_norm2D)+deli+cameraPitch.ToString("F1")+"\n";// should I record only the normalised position
 			
-			if (Input.GetKeyDown(KeyCode.Escape)) break; //break condition just in case (for debugging) this should be removed before posting online in case subject accidenatlly press the wrong button
+		//	if (Input.GetKeyDown(KeyCode.Escape)) break; //break condition just in case (for debugging) this should be removed before posting online in case subject accidenatlly press the wrong button
 			yield return null; // yield return null is absolute necessary for while loop!
 		}
 		StartCoroutine(save2file(savefn,savetext));
@@ -810,8 +816,18 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			
 			
 			translateAllow=true; rotateAllow=false;
-			while (!Input.GetKeyDown(KeyCode.Space))
+			
+			int custombreakCondition=0;
+			while (custombreakCondition==0)
+			{   if (Input.GetKeyDown(KeyCode.Space))
+				{   if (Vector3.Distance(character.position,startPosForDistEst)>0) 
+						custombreakCondition=1; //
+					else
+						text_top.text="<color=red>Move forward by the distance between the picture, before pressing the spacebar</color>"; 
+				}
 				yield return null;
+			}
+			
 			Vector3 endPos=character.position;
 			float timeEnd=Time.time;
 			savetext=trial+deli+timeInit+deli+timeEnd+deli+item1+deli+item2+deli+MK2string(startPosForDistEst)+deli+MK2string(endPos);
@@ -906,13 +922,13 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		if (run==1){
 			tmptext="<b>Object-location test run1:</b>";
 			tmptext=tmptext+"\nThis is a test phase. You should move to the remembered location of item that you learned previously.";
-			tmptext=tmptext+" Try to locate the item as precise as you can. You will get a feedback by smily or frowning face. There is some time limit.";
+			tmptext=tmptext+" Try to locate the item as precise and fast as you can. You will get a feedback by smily or frowning face.";
 			tmptext=tmptext+"\n\nClick next to begin.";
 		}
 		if (run==2){
 			tmptext="<b>Object-location test run2:</b>";
 			tmptext=tmptext+"\nThis is the second round of the test phase. As before, you should move to the remembered location of item that you learned previously.";
-			tmptext=tmptext+" Try to locate the item as precise as you can. You will get a feedback by smily or frowning face. There is some time limit.";
+			tmptext=tmptext+" Try to locate the item as precise and fast as you can. You will get a feedback by smily or frowning face.";
 			tmptext=tmptext+" Let's try to score the highest point in this round :)";
 			tmptext=tmptext+"\n\nClick next to begin.";
 		}
