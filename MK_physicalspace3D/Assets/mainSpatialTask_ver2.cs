@@ -5,6 +5,7 @@
 // 2020.06.03 MK
 
 using SimpleJSON;
+using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 // git commit test 2020/08/17 16:36
 public class mainSpatialTask_ver2 : MonoBehaviour {
+	[DllImport("__Internal")]
+	private static extern double GetDPI();
 	public int moveToNext=0;
 	// GUI elements
 	public GameObject UIcanvas;
@@ -280,6 +283,10 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 			{	trial=maxtrial;
 				text_top.text="jump to the last trial";
 			}//set the trial number to the max trial so that I can jump on to the next task
+		}
+		if (Input.GetKey(KeyCode.Alpha9))
+		{	if (Input.GetKeyDown(KeyCode.Alpha0))
+				Debug.Log(GetScreenInfo());
 		}
 /*		if (Input.GetKeyDown(KeyCode.Alpha2))
 		{	RenderSettings.fog=true;
@@ -1251,7 +1258,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 					sumtext=sumtext+debrief_q2[i]+"\n"+debrief_inputfield[i].text+"\n";
 				}
 				if (isAllAnswered)
-				{	StartCoroutine(save2file(savefn, sumtext));
+				{	sumtext=sumtext+GetScreenInfo();
+					StartCoroutine(save2file(savefn, sumtext));
 					custombreakCondition=1;
 				}
 				else
@@ -1305,8 +1313,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			form.AddField("fn", fn);
 			form.AddField("content", textToWrite+"\n");
 
-		//	var www = UnityWebRequest.Post("http://vm-mkim-1.cbs.mpg.de/testPHP/php-example.php", form);
-			var www = UnityWebRequest.Post("http://wwwuser.gwdg.de/~misun.kim01/testPHP/php-example.php", form);
+			var www = UnityWebRequest.Post("http://vm-mkim-1.cbs.mpg.de/testPHP/php-example.php", form);
+		//	var www = UnityWebRequest.Post("http://wwwuser.gwdg.de/~misun.kim01/testPHP/php-example.php", form);
 			{
 				yield return www.SendWebRequest();
 
@@ -1350,5 +1358,18 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		string[] newarray=new string[tmpnode.Count];
 		for (var i=0;i<tmpnode.Count;i++) newarray[i]=tmpnode[i];
 		return newarray;
+	}
+
+	string GetScreenInfo() {
+		float dpi=0;
+#if UNITY_WEBGL && !UNITY_EDITOR
+		double dpiFromJavascript=GetDPI();
+		dpi=(float)dpiFromJavascript;// device pixel ratio (1 for normal screen, 2 for Retina,4K high resolution dpi device)
+		Debug.Log("try to call DPI from javascript:"+dpi);
+#else
+		dpi=Screen.dpi;//absolute dpi (I think it only works within Unity Editor)
+#endif
+		string screenInfo="width"+Screen.width+"_height"+Screen.height+"_dpi"+dpi.ToString("F1")+"_fullscr"+Screen.fullScreen;
+		return screenInfo;
 	}
 }

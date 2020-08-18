@@ -11215,6 +11215,7 @@ GameObject:
   - component: {fileID: 1718474164}
   - component: {fileID: 1718474163}
   - component: {fileID: 1718474165}
+  - component: {fileID: 1718474166}
   m_Layer: 0
   m_Name: globalScriptObj
   m_TagString: Untagged
@@ -11420,6 +11421,17 @@ MonoBehaviour:
   debugInt: 
   debugVec2: []
   debugVec3: []
+--- !u!114 &1718474166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1718474162}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce897d687ec3e490fa3df0879b0937de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1751758321
 GameObject:
   m_ObjectHideFlags: 0
