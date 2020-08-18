@@ -46,8 +46,25 @@ public class startPagesForMTurk : MonoBehaviour {
 		
 		// load preset ID/PW information from text file
 		string inputfn="online_loginDict"; // ID and PW info
-		var maintestlist = Resources.Load<TextAsset>(inputfn);
-        var tmp=maintestlist.text.Split("\n"[0]);
+		
+		string maintestlist="";
+	#if UNITY_WEBGL
+		UnityWebRequest www=UnityWebRequest.Get(Application.dataPath+"/"+inputfn+".csv");
+		yield return www.SendWebRequest();
+		if (www.isNetworkError||www.isHttpError)
+			Debug.Log(www.error);
+		else{
+			Debug.Log(www.downloadHandler.text);
+			maintestlist=www.downloadHandler.text;
+			Debug.Log("load Web/"+inputfn+".csv");
+		}
+	#endif
+		if (maintestlist=="")
+		{	maintestlist = Resources.Load<TextAsset>(inputfn).text;
+			Debug.Log("load online_loginDict from Resources directory");
+		}
+		
+		var tmp=maintestlist.Split("\n"[0]);
 		loginDict_ID=new string[tmp.Length];
 		loginDict_PW=new string[tmp.Length];
 		for (int j=1;j<tmp.Length-1; j++)

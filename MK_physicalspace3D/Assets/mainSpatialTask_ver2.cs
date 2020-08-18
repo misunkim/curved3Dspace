@@ -75,7 +75,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		GameObject obj=GameObject.Find("globalVariable");
 		if (!obj)
 		{	Debug.Log("globalVariable does not exist, so I will assume it is Misun self testing");
-			subId="psub99";
+			subId="psub01";
 			sex=1; age=31;
 		}
 		else{
@@ -474,11 +474,17 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	}
 	IEnumerator endOfExp(){
 		nextButton.gameObject.SetActive(false);
+		img_fullscreen.SetActive(true);
 		text_top.text="The end";
-		string codeNumber="cherry";//should vary it later
-		string surveycode=subId+"_"+codeNumber;
+	
+		char[] subNumChar=new char[1];
+		subNumChar[0]=subId[subId.Length-1];
+		string subNumPart=new string(subNumChar);
+		int subNumber=int.Parse(subNumPart);
+		
+		string surveycode=subId+"_"+(subNumber+1);
 		string tmpstr="\nThis is the end of the experiment. Thanks so much for your participation!";
-		tmpstr=tmpstr+"\n\nHere is the Surveycode for MTurk Workers: "+surveycode;
+		tmpstr=tmpstr+"\n\nHere is the Surveycode for MTurk Workers: <color=red>"+surveycode+"</color>";
 		tmpstr=tmpstr+"\n\nYou can now close this browser. Have a nice day!";
 		text_fullscreen.text=tmpstr;	
 		yield return null;
