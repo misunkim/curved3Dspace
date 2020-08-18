@@ -1305,8 +1305,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			form.AddField("fn", fn);
 			form.AddField("content", textToWrite+"\n");
 
-			var www = UnityWebRequest.Post("http://vm-mkim-1.cbs.mpg.de/testPHP/php-example.php", form);
-		//	var www = UnityWebRequest.Post("http://wwwuser.gwdg.de/~misun.kim01/testPHP/php-example.php", form);
+		//	var www = UnityWebRequest.Post("http://vm-mkim-1.cbs.mpg.de/testPHP/php-example.php", form);
+			var www = UnityWebRequest.Post("http://wwwuser.gwdg.de/~misun.kim01/testPHP/php-example.php", form);
 			{
 				yield return www.SendWebRequest();
 
