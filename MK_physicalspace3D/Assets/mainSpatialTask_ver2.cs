@@ -73,8 +73,9 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 	public int[] debugInt;
 	public Vector2[] debugVec2;
 	public Vector3[] debugVec3;
-	int sex,age;
+	int sex,age, subSuffix;
 	IEnumerator Start () {
+		subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
 		GameObject obj=GameObject.Find("globalVariable");
 		if (!obj)
 		{	Debug.Log("globalVariable does not exist, so I will assume it is Misun self testing");
@@ -170,7 +171,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 			strObjName=strObjName+"\n"+i+deli+MK2string(objLoc[i])+deli+objName_sub[i];
 		}
 
-		string savefn=subId+"_objIdentity_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefn=subId+"_"+subSuffix+"_objIdentity_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		string demostr="sex"+sex+",age"+age;
 		
 		StartCoroutine(save2file(savefn,demostr+"\n"+strObjName));
@@ -489,7 +490,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		string subNumPart=new string(subNumChar);
 		int subNumber=int.Parse(subNumPart);
 		
-		string surveycode=subId+"_"+(subNumber+1);
+		string surveycode=subId+"_"+subSuffix;
 		string tmpstr="\nThis is the end of the experiment. Thanks so much for your participation!";
 		tmpstr=tmpstr+"\n\nHere is the Surveycode for MTurk Workers: <color=red>"+surveycode+"</color>";
 		tmpstr=tmpstr+"\n\nYou can now close this browser. Have a nice day!";
@@ -532,7 +533,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		float inittime=Time.time;
 		float timelimit=5*60;// max 6min
 		
-		string savefn=subId+"_familiarisation_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefn=subId+"_"+subSuffix+"_familiarisation_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		string savetext="";
 		
 		maxtrial=pos2DList.Length-1;
@@ -615,7 +616,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		float inittime=Time.time;
 		float timelimit=15*60;// max 15min
 		
-		string savefn=subId+"_triangle_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefn=subId+"_"+subSuffix+"_triangle_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		string savetext="";
 		trial=1;
 		Transform prop2D_mid=Instantiate(prop2D); prop2D_mid.name="cone2D_mid";
@@ -722,7 +723,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		text_fullscreen.text="";
 
 		distEstHolder_2AFC.SetActive(true);
-		string savefnSum=subId+"_DistEst2AFC_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnSum=subId+"_"+subSuffix+"_DistEst2AFC_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		//Vector3[] distEstOrder=new Vector3[3];
 		//distEstOrder[1]=new Vector3(1,2,3);
 		//distEstOrder[2]=new Vector3(6,7,5);
@@ -810,7 +811,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		distEstEgoImg1.gameObject.SetActive(true);
 		distEstEgoImg2.gameObject.SetActive(true);
 		string savetext="";
-		string savefnSum=subId+"_DistEstEgo_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnSum=subId+"_"+subSuffix+"_DistEstEgo_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		for (trial=1;trial<distEstOrder_ego.Length;trial++){
 			// temporarily hide the view because subject will be relocated
 			character.position=startPosForDistEst;
@@ -887,7 +888,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		distEstimateHolder.SetActive(true); 
 		Vector2[] distEstOrder=json2vector2(taskparam["distEstPair"]["pairList"]);
 		maxtrial=distEstOrder.Length-1;
-		string savefnSum=subId+"_DistEst1_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnSum=subId+"_"+subSuffix+"_DistEst1_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		for (trial=1; trial<distEstOrder.Length; trial++){
 			text_top.text="How far are these two items? Adjust the slider and press the spacebar";
 			text_topright.text=trial+"/"+(distEstOrder.Length-1);
@@ -959,8 +960,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		{	norm2DtoPhy3D(objLoc[j],objList_sub[j].transform);
 			objList_sub[j].SetActive(false);
 		}
-		string savefnSum=subId+"_ObjLoc_TestRun"+run+"Sum_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
-		string savefnTraj=subId+"_ObjLoc_TestRun"+run+"Traj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnSum=subId+"_"+subSuffix+"_ObjLoc_TestRun"+run+"Sum_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnTraj=subId+"_"+subSuffix+"_ObjLoc_TestRun"+run+"Traj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 
 		float sumError=0f; //to calculate the mean distance error at the end of task
 		int nCompleteTrial=0;
@@ -1152,7 +1153,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		// wait subject to grab the object
 		// give some seconds to encode the location
 		
-		string savefnTraj=subId+"_ObjLoc_LearnPhaseTraj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefnTraj=subId+"_"+subSuffix+"_ObjLoc_LearnPhaseTraj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 
 		for (trial=1; trial<learnOrder.Length;trial++){
 			text_topright.text=trial+"/"+(learnOrder.Length-1);
@@ -1210,7 +1211,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		text_top.text="Debrief questionnaire";
 		text_topright.text="";
 		timerSlider.gameObject.SetActive(false);
-		string savefn=subId+"_debrief_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
+		string savefn=subId+"_"+subSuffix+"_debrief_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
 		
 		img_fullscreen.SetActive(true);
 		text_fullscreen.text="<b>Debrief:</b>\nAlmost done! Please answer to a few questions regarding your experience about this experiment.\n\nClick next to begin.";
