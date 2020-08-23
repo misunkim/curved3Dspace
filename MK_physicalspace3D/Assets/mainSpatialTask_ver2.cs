@@ -74,7 +74,12 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 	public Vector2[] debugVec2;
 	public Vector3[] debugVec3;
 	int sex,age, subSuffix;
+	public GameObject corridor_floor, corridor_openWalls,corridor_closedWalls, curve_floor, curve_openWalls,curve_closedWalls;
+	int isOpenEnv;	
 	IEnumerator Start () {
+		isOpenEnv=0;
+		EnvironmentToggle(isOpenEnv,0);
+
 		subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
 		GameObject obj=GameObject.Find("globalVariable");
 		if (!obj)
@@ -172,7 +177,7 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		}
 
 		string savefn=subId+"_"+subSuffix+"_objIdentity_"+System.DateTime.Now.ToString("yyyyMMdd_HHmm")+".txt";
-		string demostr="sex"+sex+",age"+age;
+		string demostr="sex"+sex+",age"+age+",isOpenEnv"+isOpenEnv;
 		
 		StartCoroutine(save2file(savefn,demostr+"\n"+strObjName));
 
@@ -209,6 +214,27 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 			
 		}
 		*/
+	}
+	void EnvironmentToggle(int IsOpen, int IsCorridor){
+		// default: closed environment
+		// closed environment for main task:
+		// closed environmetn for ego dist task:
+		// transparent environment for main task: I should 1)deactivate closedCurve, corridor and 2)activate openCurve
+		// transparent environment for ego dist task: I should deactivate 1)all curve 2)activate crridor with openCorridor
+		if (IsOpen==1 & IsCorridor==1)
+		{	corridor_floor.SetActive(true); corridor_openWalls.SetActive(true); corridor_closedWalls.SetActive(false);
+			curve_floor.SetActive(false);
+		}
+		if (IsOpen==1 & IsCorridor==0)
+		{	corridor_floor.SetActive(false);
+			curve_floor.SetActive(true); curve_openWalls.SetActive(true);curve_closedWalls.SetActive(false);
+		}
+		if (IsOpen==0)
+		{	corridor_floor.SetActive(true); corridor_openWalls.SetActive(false);corridor_closedWalls.SetActive(true);
+			curve_floor.SetActive(true); curve_openWalls.SetActive(false); curve_closedWalls.SetActive(true);
+		}
+
+
 	}
 	void Update () {
 		if (moveConstraint==1) // update the locationon the flattened surface(2D) and then translate into 3D
@@ -289,6 +315,15 @@ public class mainSpatialTask_ver2 : MonoBehaviour {
 		{	if (Input.GetKeyDown(KeyCode.Alpha0))
 				Debug.Log(GetScreenInfo());
 		}
+		if (Input.GetKeyDown(KeyCode.Alpha1))
+			EnvironmentToggle(1,1);
+		if (Input.GetKeyDown(KeyCode.Alpha2))
+			EnvironmentToggle(1,0);
+		if (Input.GetKeyDown(KeyCode.Alpha3))
+			EnvironmentToggle(0,1);
+		if (Input.GetKeyDown(KeyCode.Alpha4))
+			EnvironmentToggle(0,0);
+		
 /*		if (Input.GetKeyDown(KeyCode.Alpha2))
 		{	RenderSettings.fog=true;
 		}
@@ -778,6 +813,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		// 2. replace subject at the start line, disable rotation cue/backward cue
 		// 3. let them move straight and wait until they press the button
 		// 4. ITI, 
+		EnvironmentToggle(isOpenEnv, 1);
+
 		moveConstraint=0;//now I will cut the link between the 2D flattened surface and 3D, and directly move the 3D character
 		
 		text_top.text="";
