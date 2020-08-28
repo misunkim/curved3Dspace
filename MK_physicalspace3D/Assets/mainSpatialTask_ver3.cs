@@ -89,7 +89,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		int subNum=Random.Range(1,50);
 		subId="msub"+subNum.ToString("D2");
 		subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
-		overviewFn=subId+"_"+subSuffix+"_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
+		overviewFn=subId+"_"+subSuffix+"_overview_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
 
 		pointAccum=0;//bonus point start at 0;
 		text_topleft.text="";
