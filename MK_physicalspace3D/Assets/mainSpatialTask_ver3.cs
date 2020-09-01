@@ -94,7 +94,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		pointAccum=0;//bonus point start at 0;
 		text_topleft.text="";
 		deli="\t";
-		isOpenEnv=0;
+		isOpenEnv=1;
 		EnvironmentToggle(isOpenEnv,0);
 	
 	
