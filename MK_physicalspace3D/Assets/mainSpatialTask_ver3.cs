@@ -94,7 +94,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		pointAccum=0;//bonus point start at 0;
 		text_topleft.text="";
 		deli="\t";
-		isOpenEnv=1;
+		isOpenEnv=0;
 		EnvironmentToggle(isOpenEnv,0);
 	
 	
@@ -177,7 +177,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
 		startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
 		yield return objectLocationTestPhase(learnOrder,startLoc,2);
-
+	
 		yield return objectDistEstimate_egocentric();
 		yield return objectDistEstimate_pairwise();
 		yield return objectDistEstimate_2AFC();

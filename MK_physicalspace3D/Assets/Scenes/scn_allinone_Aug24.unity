@@ -5407,7 +5407,7 @@ GameObject:
   - component: {fileID: 621193619}
   - component: {fileID: 621193618}
   - component: {fileID: 621193617}
-  m_Layer: 0
+  m_Layer: 1
   m_Name: closedCurve_ceiling
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6293,7 +6293,7 @@ GameObject:
   - component: {fileID: 722715675}
   - component: {fileID: 722715674}
   - component: {fileID: 722715673}
-  m_Layer: 0
+  m_Layer: 1
   m_Name: closedCurveWall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13308,6 +13308,7 @@ MonoBehaviour:
   curve_floor: {fileID: 84094386}
   curve_openWalls: {fileID: 642558661}
   curve_closedWalls: {fileID: 446547907}
+  overviewFn: 
 --- !u!1 &1745225706
 GameObject:
   m_ObjectHideFlags: 0
