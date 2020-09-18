@@ -23,15 +23,19 @@ using UnityEngine.EventSystems;
 public class mainSpatialTask_ver3 : MonoBehaviour {
 	[DllImport("__Internal")]
 	private static extern double GetDPI();
+
+    public float[] lastlastError, lastError;
 	public int moveToNext=0;
 	// GUI elements
 	public Button nextButton;
 	public Text text_top, text_fullscreen, text_topleft, text_topright, text_warning;
 	public GameObject img_fullscreen;
 
-	public GameObject debriefHolder, consentHolder,buttonProlific;
+	public GameObject debriefHolder, consentHolder,buttonProlific, demographHolder;
 	public GameObject[] debriefQ, debriefQ2;//debrief dropdown questions(debrieefQ) and debrief text inputfield questions(debriefQ2)
-	
+    public Dropdown dropdownSex;
+    public Text inputAge;
+
 	public Slider timerSlider;
 	public GameObject distEstimateHolder, distEstHolder_2AFC;
 	public Slider distEstSlider;
@@ -45,7 +49,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	public float rotateSpeed=90;
 	public float translateSpeed=4;
 	public Transform markerFlat1, marker3D;
-	public Transform guideArrow2D, guideArrow3D;
+	public Transform guideArrow2D, guideArrow3D,selfArrowHolder;
 	public Vector3[] posList;
 	public Transform character, char2D;
 	public Transform characterCamera;
@@ -79,12 +83,13 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	public Vector3[] debugVec3;
 	int sex,age, subSuffix;
 	public GameObject corridor_floor, corridor_openWalls,corridor_closedWalls, curve_floor, curve_openWalls,curve_closedWalls;
-	int isOpenEnv;	
+	int isOpenEnv;
+    string distType;
 
 	private string currentLocalTime,currentGMTime;
 	public string overviewFn;// text file for summary of start/end of experiment
 	IEnumerator Start () {
-
+			
 		//int subNum=1;
 		int subNum=Random.Range(1,50);
 		subId="msub"+subNum.ToString("D2");
@@ -94,10 +99,11 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		pointAccum=0;//bonus point start at 0;
 		text_topleft.text="";
 		deli="\t";
-		isOpenEnv=0;
+		isOpenEnv=1;
+        distType = "Euclid";
 		EnvironmentToggle(isOpenEnv,0);
 	
-	
+		
 		string PID="null";
 		string fullURL="";
 	#if UNITY_WEBGL && !UNITY_EDITOR
@@ -125,27 +131,27 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		yield return consentPhase();
 
 		
-	//	text_warning.gameObject.SetActive(false);
+		text_warning.gameObject.SetActive(false);
 		rotateAllow=true; translateAllow=true;
 
 		string the_JSON_string="";
 		
 	#if UNITY_WEBGL
-		UnityWebRequest www=UnityWebRequest.Get(Application.dataPath+"/"+subId+"_inputParam.json");
+		UnityWebRequest www=UnityWebRequest.Get(Application.dataPath+"/"+subId+"_inputParam_0917.json");
 		yield return www.SendWebRequest();
 		if (www.isNetworkError||www.isHttpError)
 			Debug.Log(www.error);
 		else{
 			Debug.Log(www.downloadHandler.text);
 			the_JSON_string=www.downloadHandler.text;
-			Debug.Log("load Web/"+subId+"_inputParam");
+			Debug.Log("load Web/"+subId+"_inputParam_0917");
 		}
 	#endif
 		
 		if (the_JSON_string=="") //if I fail to load the json task param from the server, find it from Resources directory
-		{	TextAsset jsonTextAsset= Resources.Load<TextAsset>(subId+"_inputParam");
+		{	TextAsset jsonTextAsset= Resources.Load<TextAsset>(subId+"_inputParam_0917");
 			if (jsonTextAsset!=null){
-				Debug.Log("load Resources/"+subId+"_inputParam");
+				Debug.Log("load Resources/"+subId+"_inputParams_0917");
 				the_JSON_string=jsonTextAsset.text;
 			}
 			else{
@@ -174,14 +180,22 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		startLoc=json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
 		yield return objectLocationTestPhase(learnOrder,startLoc,1);
 
-		learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
-		startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
-		yield return objectLocationTestPhase(learnOrder,startLoc,2);
-	
-		yield return objectDistEstimate_egocentric();
-		yield return objectDistEstimate_pairwise();
-		yield return objectDistEstimate_2AFC();
-	
+        //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
+        //	startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
+        //	yield return objectLocationTestPhase(learnOrder,startLoc,2);
+
+        if (distType == "Euclid")
+        {
+            yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
+            yield return objectDistEstimate_pairwise();
+            yield return objectDistEstimate_2AFC();
+        }
+        if (distType == "Path")
+        {
+            yield return objectDistEstimate_egocentric();
+            yield return objectDistEstimate_pairwise();
+            yield return objectDistEstimate_2AFC();
+        }	
 		yield return debriefPhase();
 		yield return endOfExp();
 	
@@ -207,7 +221,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		}
 
 		string savefn=subId+"_"+subSuffix+"_objIdentity_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
-		string demostr="sex"+sex+",age"+age+",isOpenEnv"+isOpenEnv;
+		string demostr="sex"+sex+",age"+age+",isOpenEnv"+isOpenEnv+",distType"+distType;
 		
 		StartCoroutine(save2file(savefn,demostr+"\n"+strObjName));
 
@@ -541,10 +555,45 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"end of consentPhase";
-		StartCoroutine(save2file(overviewFn,tmptext));
+
+        yield return demographicPhase();
+        StartCoroutine(save2file(overviewFn,tmptext));
 
 	}
-	IEnumerator startOfExp(){
+    IEnumerator demographicPhase()
+    {
+        demographHolder.SetActive(true);
+        Debug.Log("start:demographicPhase()");
+        int custombreakCondition = 0;
+
+        while (custombreakCondition == 0)
+        {
+            if (moveToNext == 1)
+            {
+                moveToNext = 0; // reset the move To Next button
+                if (inputAge.text != "" & dropdownSex.value != 0)
+                {
+                    int tmpsex = dropdownSex.value;
+                    int tmpage = int.Parse(inputAge.text);
+                    Debug.Log("input age=" + tmpage);
+                    if (tmpage >= 18 & tmpage <= 35)
+                    {
+                        custombreakCondition = 1;
+                        sex = tmpsex;
+                        age = tmpage;
+                    }
+                    else
+                    {
+                        text_top.text = "<color=red>(You should be between 18 and 35 years old to participate in this study</color>)";
+                    }
+                }
+
+            }
+            yield return null;
+        }
+        demographHolder.SetActive(false); //remove the demographic component
+    }
+    IEnumerator startOfExp(){
 		text_top.text="";
 		text_topright.text="";
 		timerSlider.gameObject.SetActive(false);
@@ -808,7 +857,99 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		}moveToNext=0;//
 		
 	}
-	IEnumerator objectDistEstimate_2AFC(){
+	
+	IEnumerator instructionEuclideanDist(){
+        Debug.Log("start instructionEuclideanDist");
+        text_top.text = "Instruction";
+        img_fullscreen.SetActive(true); //put background image
+        string tmptext = "In the next part of the experiment, you will be asked about the <b>distances between the picture cubes</b> you learned earlier";
+        tmptext = tmptext + "\nFor instance, you will report whether you think the "+objName_sub[5]+" and "+objName_sub[1]+ " are located very close or very far,";
+        tmptext = tmptext + " or decide whether the "+objName_sub[5]+" is closer to the " +objName_sub[1]+" or "+objName_sub[3]+".";
+        tmptext = tmptext + "\n\nWhen you estimate the distance between the objects, you should imagine a <b>straight line</b> between the objects.";
+        tmptext = tmptext + "\n\nYou will see the example of straight line distances in the next screen. Please click next.";
+        text_fullscreen.text = tmptext;
+        nextButton.gameObject.SetActive(true);
+        while (moveToNext == 0)
+        {
+            yield return null;
+        }
+        moveToNext = 0;//
+        nextButton.gameObject.SetActive(false);
+        text_fullscreen.text = "";
+        img_fullscreen.SetActive(false);
+        //I will give some instruction on estimating the 3D Eucl distance
+        //showing the 3D distance from egocentric perspective
+        //I want to avoid showing the bird-eye-view of the environment because I am more interested in how one build an allocentric map from egocenric experiences?
+        //1) fix subject at some start location 
+        //2) turning subject towards the target object
+        //3) increase the arrow to reach the object
+        //4) repeat this process
+        Vector3[] startLoc=new Vector3[5];
+		startLoc[1]=new Vector3(-0.1f,0.1f,90f);
+		startLoc[2]=startLoc[1];
+        startLoc[3] = startLoc[1];
+        startLoc[4] = startLoc[1];
+
+        Vector3[] targetLoc=new Vector3[5];
+		targetLoc[1]=new Vector3(0.9f,0.9f,90f);
+		targetLoc[2]=new Vector3(0.9f,0.1f,0f);
+        targetLoc[3] = new Vector3(-0.2f, 0.3f, 0f);
+        targetLoc[4] = new Vector3(-0.9f, 0.1f, 0f);
+        trial = 1;
+        Vector3 start3Dpos = norm2DtoPhy3D(startLoc[trial], character); //first place hte subject in the starting position
+        moveConstraint = 0;    
+        float timeinit;
+        for (trial=1; trial<startLoc.Length;trial++){
+			text_top.text="Imagine that you measure a straight-line distance from here to a traffic cone";
+			guideArrow3D.gameObject.SetActive(false);
+			norm2DtoPhy2D(startLoc[trial],char2D);
+			norm2DtoPhy2D(targetLoc[trial], prop2D);
+			Vector3 target3Dpos=norm2DtoPhy3D(targetLoc[trial],prop3D);
+
+            Quaternion startQuat = character.rotation;
+
+            norm2DtoPhy3D(startLoc[trial], character);
+            Quaternion targetQuat = Quaternion.LookRotation(target3Dpos-start3Dpos,character.up);
+            timeinit = Time.time;
+            float rotDur = Quaternion.Angle(startQuat,targetQuat)/rotateSpeed*2;
+            while (Time.time - timeinit < rotDur)
+            {
+                character.rotation = Quaternion.Slerp(startQuat, targetQuat, (Time.time - timeinit) / rotDur);
+                yield return null;
+            }
+			yield return new WaitForSeconds(1f);
+            text_top.text = "The distance is the length of this red line";
+			float disttmp3D=Vector3.Distance(start3Dpos,target3Dpos);
+			timeinit=Time.time;
+			float tmpdur=disttmp3D/translateSpeed*1.5f;
+			selfArrowHolder.gameObject.SetActive(true);
+			while (Time.time-timeinit<tmpdur)
+			{	float tmpArrowLen=Mathf.Lerp(2,disttmp3D,(Time.time-timeinit)/tmpdur);
+				selfArrowHolder.localScale=new Vector3(1,1,tmpArrowLen);
+				yield return null;
+			}
+            text_top.text = "";
+            yield return new WaitForSeconds(2f);
+			selfArrowHolder.gameObject.SetActive(false);
+		}
+		yield return null;
+        img_fullscreen.SetActive(true); //put background image
+        tmptext = "Is the meaning of 'straight line distance' clear to you? If you are unsure, please contact the researcher.";
+        tmptext = tmptext + "\nOtherwise, click next to continue the experiment.";
+        text_fullscreen.text = tmptext;
+        nextButton.gameObject.SetActive(true);
+        while (moveToNext == 0)
+        {
+            yield return null;
+        }
+        moveToNext = 0;//
+        nextButton.gameObject.SetActive(false);
+        text_fullscreen.text = "";
+        img_fullscreen.SetActive(false);
+
+    }
+
+    IEnumerator objectDistEstimate_2AFC(){
 
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objDistEst_2AFC";
@@ -817,8 +958,20 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		text_top.text="";
 		text_topright.text="";
 		img_fullscreen.SetActive(true); //put background image
-		tmptext="<b>Distance estimation task:</b>\nIn this task, you should estimate how long it would take to move from one picture cube to other picture cube and compare the distances.";
-		tmptext=tmptext+"\nYou should press 1 or 2 to indicate the picture cube that is closer to the reference picture cube. ";
+        if (distType == "Path")
+        {
+            tmptext = "<b>Distance estimation task:</b>\nIn this task, you should estimate how long it would take to move from one picture cube to other picture cube and compare the distances.";
+        }
+        else
+        {
+            if (distType == "Euclid")
+            {
+                tmptext = "<b>Distance estimation task:</b>\nIn this task, you should compare the straight line distances between the objects.";
+            }
+            else
+                tmptext = "DistType shoulld be either 'Path' or 'Euclid'. Something is wrong. Contact the researcher";
+        }
+        tmptext = tmptext+"\nPress 1 or 2 to indicate which picture cube is closer to the reference picture cube. ";
 		tmptext=tmptext+"\n\nClick next to begin.";
 		text_fullscreen.text=tmptext;
 		nextButton.gameObject.SetActive(true);
@@ -979,6 +1132,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 
 	}
 	IEnumerator objectDistEstimate_pairwise(){
+        
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objDistEst_pairwise";
 		StartCoroutine(save2file(overviewFn,tmptext));
@@ -988,11 +1142,26 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		timerSlider.gameObject.SetActive(false);
 		timerSlider.value=0;
 		img_fullscreen.SetActive(true); //put background image
-		tmptext="<b>Distance estimation:</b>\nIn this task, you should estimate how long it would take to move from one location to other location";
-		tmptext=tmptext+"\nYou will adjust the slider to indicate the distance from 'very close' to 'very far' (e.g. pair of pictures that can be farthest away in the environment).";
-		tmptext=tmptext+"\nPlease try to use the whole range of the slider.";
-		tmptext=tmptext+"\n\nClick next to begin.";
-		text_fullscreen.text=tmptext;
+
+        tmptext = "<b>Distance estimation:</b>\n";
+        if (distType == "Path")
+        {
+            tmptext = tmptext + "In this task, you should estimate how long it would take to move from one location to other location";
+        }
+        else
+        {
+            if (distType == "Euclid")
+            {
+                tmptext = tmptext + "In this task, you should estimate the straight line distance between one object location to the other object location";
+            }
+            else
+                tmptext = "DistTYpe should be either 'Path' or 'Euclid'. Something is wrong! contact researcher";
+        }
+        tmptext = tmptext + "\nYou will adjust the slider to indicate the distance from 'very close' to 'very far' (e.g. pair of pictures that can be farthest away in the environment).";
+        tmptext = tmptext + "\nPlease try to esimate the distance as precisely as you can. And try to use the whole range of the slider.";
+        tmptext = tmptext + "\n\nClick next to begin.";
+        
+        text_fullscreen.text=tmptext;
 		nextButton.gameObject.SetActive(true);
 		while (moveToNext==0)
 		{    yield return null;
@@ -1044,7 +1213,9 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		pointAccum=0;//reset the point
 		text_topleft.text="";
 		text_topright.text="";
-		timerSlider.value=0;
+
+        timerSlider.gameObject.SetActive(true);
+        timerSlider.value=0;
 		
 		maxtrial=learnOrder.Length-1;
 
@@ -1084,111 +1255,158 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 
 		float sumError=0f; //to calculate the mean distance error at the end of task
 		int nCompleteTrial=0;
-		for (trial=1; trial<learnOrder.Length;trial++){
-			guideArrow3D.gameObject.SetActive(false);
-			text_topright.text=trial+"/"+(learnOrder.Length-1);
-			Vector3 currentObjLoc=objLoc[learnOrder[trial]];//normalised current object location (x,y,orientation)
-			Vector2 currentObjLoc2D=new Vector2(currentObjLoc.x,currentObjLoc.y);
-			norm2DtoPhy2D(currentObjLoc, prop2D);
-			GameObject currentObj=objList_sub[learnOrder[trial]];
-			// temporarily hide the view because subject will be relocated
-			norm2DtoPhy2D(startLoc[trial],char2D);
-			norm2DtoPhy3D(startLoc[trial],character);
 
-			
-			// retriev phase
-			currentObj.SetActive(false);
-			
-			imgCenter.sprite=cueList_sub[learnOrder[trial]];
-			imgCenter.gameObject.SetActive(true);
-			text_top.text="Go to the "+objName_sub[learnOrder[trial]]+", then press the spacebar";
-			translateAllow=false;rotateAllow=false;
-			yield return new WaitForSeconds(2);
-			translateAllow=true;rotateAllow=true;
-			imgCenter.gameObject.SetActive(false);
-			
-			float inittime=Time.time;
-			float timelimit1=60f; // X sec to find the goal
-			string savetextSum="";
-			string savetextTraj="";
-			while(Time.time-inittime<timelimit1 & !Input.GetKeyDown(KeyCode.Space))
-			{	timerSlider.value=(Time.time-inittime)/timelimit1;
-				float cameraPitch=characterCamera.localEulerAngles.x;
-				savetextTraj=savetextTraj+trial+deli+Time.time.ToString("F3")+deli+MK2string(curr_norm2D)+deli+cameraPitch.ToString("F1")+deli+"0"+"\n";
-				yield return null;
-			}
-			float endtime=Time.time;
-			// should I give feedback during the test phase? if I want to stop further learning then I shouldn't.
-			currentObj.SetActive(true);
-			
-			float distPathNormal=-1;
-			if (Input.GetKeyDown(KeyCode.Space))
-			{
-				distPathNormal=Mathf.Sqrt(Mathf.Pow(curr_norm2D.x-currentObjLoc.x,2)+Mathf.Pow(curr_norm2D.y-currentObjLoc.y,2));
-				//	distEucl=curr_norm2D.x-Vector2.Distance(character.position, currentObj.transform.position);
-				string feedbacktext="Error is "+(25*distPathNormal).ToString("F1");
-				feedbacktext="";
-				translateAllow=false;rotateAllow=false;
-				yield return FeedbackSmile(distPathNormal,feedbacktext);
-				translateAllow=true;rotateAllow=true;
-				sumError=sumError+distPathNormal;
-				nCompleteTrial++;
-			}
-			else{
-				string feedbacktext="Timeout";
-				translateAllow=false;rotateAllow=false;
-				yield return FeedbackSmile(100, feedbacktext);
-				translateAllow=true;rotateAllow=true;
-				
-			}
-			savetextSum=trial+deli+inittime+deli+endtime+deli+MK2string(currentObjLoc)+deli+MK2string(curr_norm2D)+deli+distPathNormal.ToString("F3");
-		
-			StartCoroutine(save2file(savefnSum,savetextSum));
-			
-			text_top.text="Move to the "+objName_sub[learnOrder[trial]]+", and try to remember it";
-			inittime=Time.time;
-			
-			int didHitCheck=1;
-			timelimit1=60f;// so one can relearn the locatin of objects
-			while (Time.time-inittime<timelimit1)
-			{	placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
-				timerSlider.value=(Time.time-inittime)/timelimit1;
-				float cameraPitch=characterCamera.localEulerAngles.x;
-				
-				savetextTraj=savetextTraj+trial+deli+Time.time.ToString("F3")+deli+MK2string(curr_norm2D)+deli+cameraPitch.ToString("F1")+deli+didHitCheck+"\n";
-				
-				if (hitCheck())
-				{	text_top.text="Press spacebar to continue";
-					didHitCheck=2;
-				}
-				if (didHitCheck==2&Input.GetKeyDown(KeyCode.Space))
-					break;
-				yield return null;
-			}
-			if (didHitCheck==1)
-			{	text_top.text="<color=red>Next trial begins soon</color>";
-				yield return new WaitForSeconds(2);
-			}
-			StartCoroutine(save2file(savefnTraj,savetextTraj));
-			
-			img_fullscreen.SetActive(true);
-			yield return new WaitForSeconds(1f);
-			img_fullscreen.SetActive(false);
-			currentObj.SetActive(false);
+        lastlastError = new float[] { 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f };//initialize the error with some arbitrary large number
+        lastError = new float[] { 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f };
+        
+		for (trial=1; trial<learnOrder.Length;trial++){
+            // in case of adaptive testing paradigm, I will skip the trial if subject has already remembered that object well
+            Debug.Log("trial=" + trial);
+            bool isAdaptiveTrialNum = true;
+            bool isSkipTrial = false;
+
+            if (!isAdaptiveTrialNum)
+                isSkipTrial = false; // if it is not adaptive learning paradigm ,present all prepared trials
+            else
+            {// if it's adaptive learning paradigm, skip the location trials where subject already remembered well
+                float errorThres = 0.25f;
+                if (lastError[learnOrder[trial]] < errorThres & lastlastError[learnOrder[trial]] < errorThres & trial > 2 * 8)
+                    isSkipTrial = true; //if subjects already observed minimal 4 repetitionx8 obj=32 trials, and then latest 2 trial has small error then skip it.
+                else
+                    Debug.Log("didn't meet the condition");
+            }
+
+            if (isSkipTrial)
+            {
+                Debug.Log("skip current trial because subjects already remembered the object well");
+            }
+            else
+            {
+                guideArrow3D.gameObject.SetActive(false);
+                //text_topright.text = trial + "/" + (learnOrder.Length - 1);
+                Vector3 currentObjLoc = objLoc[learnOrder[trial]];//normalised current object location (x,y,orientation)
+                Vector2 currentObjLoc2D = new Vector2(currentObjLoc.x, currentObjLoc.y);
+                norm2DtoPhy2D(currentObjLoc, prop2D);
+                GameObject currentObj = objList_sub[learnOrder[trial]];
+                // temporarily hide the view because subject will be relocated
+                norm2DtoPhy2D(startLoc[trial], char2D);
+                norm2DtoPhy3D(startLoc[trial], character);
+
+
+                // retriev phase
+                currentObj.SetActive(false);
+
+                imgCenter.sprite = cueList_sub[learnOrder[trial]];
+                imgCenter.gameObject.SetActive(true);
+                text_top.text = "Go to the " + objName_sub[learnOrder[trial]] + ", then press the spacebar";
+                translateAllow = false; rotateAllow = false;
+                yield return new WaitForSeconds(2);
+                translateAllow = true; rotateAllow = true;
+                imgCenter.gameObject.SetActive(false);
+
+                float inittime = Time.time;
+                float timelimit1 = 60f; // X sec to find the goal
+                string savetextSum = "";
+                string savetextTraj = "";
+                while (Time.time - inittime < timelimit1 & !Input.GetKeyDown(KeyCode.Space))
+                {
+                    timerSlider.value = (Time.time - inittime) / timelimit1;
+                    float cameraPitch = characterCamera.localEulerAngles.x;
+                    savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + "0" + "\n";
+                    yield return null;
+                }
+                float endtime = Time.time;
+                // should I give feedback during the test phase? if I want to stop further learning then I shouldn't.
+                currentObj.SetActive(true);
+
+                float distPathNormal = -1;
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    distPathNormal = Mathf.Sqrt(Mathf.Pow(curr_norm2D.x - currentObjLoc.x, 2) + Mathf.Pow(curr_norm2D.y - currentObjLoc.y, 2));
+                    //	distEucl=curr_norm2D.x-Vector2.Distance(character.position, currentObj.transform.position);
+                    string feedbacktext = "Error is " + (25 * distPathNormal).ToString("F1");
+                    feedbacktext = "";
+                    translateAllow = false; rotateAllow = false;
+                    yield return FeedbackSmile(distPathNormal, feedbacktext);
+                    translateAllow = true; rotateAllow = true;
+                    sumError = sumError + distPathNormal;
+
+                    lastlastError[learnOrder[trial]] = lastError[learnOrder[trial]];
+                    lastError[learnOrder[trial]] = distPathNormal;
+
+                    nCompleteTrial++;
+                }
+                else
+                {
+                    string feedbacktext = "Timeout";
+                    translateAllow = false; rotateAllow = false;
+                    yield return FeedbackSmile(100, feedbacktext);
+                    translateAllow = true; rotateAllow = true;
+
+                }
+                savetextSum = trial + deli + inittime + deli + endtime + deli + MK2string(currentObjLoc) + deli + MK2string(curr_norm2D) + deli + distPathNormal.ToString("F3");
+
+                StartCoroutine(save2file(savefnSum, savetextSum));
+
+                text_top.text = "Move to the " + objName_sub[learnOrder[trial]] + ", and try to remember it";
+                inittime = Time.time;
+
+                int didHitCheck = 1;
+                timelimit1 = 60f;// so one can relearn the locatin of objects
+                while (Time.time - inittime < timelimit1)
+                {
+                    placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
+                    timerSlider.value = (Time.time - inittime) / timelimit1;
+                    float cameraPitch = characterCamera.localEulerAngles.x;
+
+                    savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + didHitCheck + "\n";
+
+                    if (hitCheck())
+                    {
+                        text_top.text = "Press spacebar to continue";
+                        didHitCheck = 2;
+                    }
+                    if (didHitCheck == 2 & Input.GetKeyDown(KeyCode.Space))
+                        break;
+                    yield return null;
+                }
+                if (didHitCheck == 1)
+                {
+                    text_top.text = "<color=red>Next trial begins soon</color>";
+                    yield return new WaitForSeconds(2);
+                }
+                StartCoroutine(save2file(savefnTraj, savetextTraj));
+
+                img_fullscreen.SetActive(true);
+                yield return new WaitForSeconds(1f);
+                img_fullscreen.SetActive(false);
+                currentObj.SetActive(false);
+
+            }
 		}
+
 		string tmpstring="End of the test phase, click next to continue.";
 		img_fullscreen.SetActive(true);
 		imgCenter.gameObject.SetActive(true);
-		text_fullscreen.text="Score: "+pointAccum+"/48";
-		if (pointAccum>=40){	
+		
+        float meanlasterror = 0;
+        for (int i = 1; i <= 8; i++)
+            meanlasterror = meanlasterror + lastError[i];
+        meanlasterror = meanlasterror / 8;
+
+        if (meanlasterror<=0.2f){//instead of collect point let's use the distance error at the end..	
 			imgCenter.sprite=medalSprite[0];
-		}
-		if (pointAccum>=31 & pointAccum<40){
+            text_fullscreen.text = "Amazing! You won a gold medal :)";
+        }
+        if (meanlasterror>0.2f & meanlasterror<=0.3f){
 			imgCenter.sprite=medalSprite[1];
-		}if (pointAccum>=24 & pointAccum<31){
+            text_fullscreen.text = "Good! You won a silver medal";
+        } if (meanlasterror>0.3f){
 			imgCenter.sprite=medalSprite[2];
-		}
-		text_top.text=tmpstring;
+            text_fullscreen.text = "You won a bronze medal ";
+
+        }
+        text_top.text=tmpstring;
 		nextButton.gameObject.SetActive(true);
 		while (moveToNext==0)
 		{    yield return null;
