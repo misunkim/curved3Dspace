@@ -860,13 +860,17 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	
 	IEnumerator instructionEuclideanDist(){
         Debug.Log("start instructionEuclideanDist");
+
+        prop3D.gameObject.SetActive(true);
+
+        text_topleft.text = "";
         text_top.text = "Instruction";
         img_fullscreen.SetActive(true); //put background image
-        string tmptext = "In the next part of the experiment, you will be asked about the <b>distances between the picture cubes</b> you learned earlier";
-        tmptext = tmptext + "\nFor instance, you will report whether you think the "+objName_sub[5]+" and "+objName_sub[1]+ " are located very close or very far,";
+        string tmptext = "In the next part of the experiment, you will be asked to estimate the <b>distances between the picture cubes</b> you learned earlier.";
+        tmptext = tmptext + "\nFor instance, you will report whether "+objName_sub[5]+" and "+objName_sub[1]+ " are very close or very far away,";
         tmptext = tmptext + " or decide whether the "+objName_sub[5]+" is closer to the " +objName_sub[1]+" or "+objName_sub[3]+".";
         tmptext = tmptext + "\n\nWhen you estimate the distance between the objects, you should imagine a <b>straight line</b> between the objects.";
-        tmptext = tmptext + "\n\nYou will see the example of straight line distances in the next screen. Please click next.";
+        tmptext = tmptext + "\n\nTo illustrate the <b>straight line</b>, I will show you a demonstration in the next page. Please click next.";
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
         while (moveToNext == 0)
@@ -911,7 +915,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
             norm2DtoPhy3D(startLoc[trial], character);
             Quaternion targetQuat = Quaternion.LookRotation(target3Dpos-start3Dpos,character.up);
             timeinit = Time.time;
-            float rotDur = Quaternion.Angle(startQuat,targetQuat)/rotateSpeed*2;
+            float rotDur = Quaternion.Angle(startQuat,targetQuat)/rotateSpeed*2.5f;
             while (Time.time - timeinit < rotDur)
             {
                 character.rotation = Quaternion.Slerp(startQuat, targetQuat, (Time.time - timeinit) / rotDur);
@@ -921,7 +925,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
             text_top.text = "The distance is the length of this red line";
 			float disttmp3D=Vector3.Distance(start3Dpos,target3Dpos);
 			timeinit=Time.time;
-			float tmpdur=disttmp3D/translateSpeed*1.5f;
+			float tmpdur=disttmp3D/translateSpeed*2f;
 			selfArrowHolder.gameObject.SetActive(true);
 			while (Time.time-timeinit<tmpdur)
 			{	float tmpArrowLen=Mathf.Lerp(2,disttmp3D,(Time.time-timeinit)/tmpdur);
@@ -934,8 +938,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		}
 		yield return null;
         img_fullscreen.SetActive(true); //put background image
-        tmptext = "Is the meaning of 'straight line distance' clear to you? If you are unsure, please contact the researcher.";
-        tmptext = tmptext + "\nOtherwise, click next to continue the experiment.";
+        tmptext = "If the meaning of the distance along a straight line is clear, please click next and continue the experiment.";
+        tmptext = tmptext + "\nOtherwise, please contact the researcher.";
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
         while (moveToNext == 0)
@@ -1270,7 +1274,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
             else
             {// if it's adaptive learning paradigm, skip the location trials where subject already remembered well
                 float errorThres = 0.25f;
-                if (lastError[learnOrder[trial]] < errorThres & lastlastError[learnOrder[trial]] < errorThres & trial > 2 * 8)
+                if (lastError[learnOrder[trial]] < errorThres & lastlastError[learnOrder[trial]] < errorThres & trial > 4 * 8)
                     isSkipTrial = true; //if subjects already observed minimal 4 repetitionx8 obj=32 trials, and then latest 2 trial has small error then skip it.
                 else
                     Debug.Log("didn't meet the condition");
@@ -1612,7 +1616,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 					sumtext=sumtext+debrief_q2[i]+"\n"+debrief_inputfield[i].text+"\n";
 				}
 				if (isAllAnswered)
-				{	sumtext=sumtext+GetScreenInfo();
+				{	sumtext=sumtext+"\n"+GetScreenInfo();
 					StartCoroutine(save2file(savefn, sumtext));
 					custombreakCondition=1;
 				}
