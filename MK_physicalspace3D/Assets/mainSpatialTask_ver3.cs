@@ -65,7 +65,6 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	// Environment related parameters (ideally this should be also placed somewhere else..)
 	public int envType=1; //critical, whether the environment is slope or cylinder
 	public float sqDim=25;
-	public	float Radius=25/Mathf.PI;
 		
 	// below, I declared task order/parameters as public global variable for easy debugging purpose
 	// I think for the readability of script, such public global variable should be minimally used
@@ -92,6 +91,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 			
 		//int subNum=1;
 		int subNum=Random.Range(1,50);
+        subNum = 8;
 		subId="msub"+subNum.ToString("D2");
 		subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
 		overviewFn=subId+"_"+subSuffix+"_overview_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
@@ -99,7 +99,8 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		pointAccum=0;//bonus point start at 0;
 		text_topleft.text="";
 		deli="\t";
-		isOpenEnv=1;
+        envType = 4;//270deg cylinder
+        isOpenEnv =1;
         distType = "Euclid";
 		EnvironmentToggle(isOpenEnv,0);
 	
@@ -137,7 +138,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		string the_JSON_string="";
 		
 	#if UNITY_WEBGL
-		UnityWebRequest www=UnityWebRequest.Get(Application.dataPath+"/"+subId+"_inputParam_0917.json");
+		UnityWebRequest www=UnityWebRequest.Get(Application.dataPath+"/"+subId+"_inputParam_1001.json");
 		yield return www.SendWebRequest();
 		if (www.isNetworkError||www.isHttpError)
 			Debug.Log(www.error);
@@ -149,7 +150,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	#endif
 		
 		if (the_JSON_string=="") //if I fail to load the json task param from the server, find it from Resources directory
-		{	TextAsset jsonTextAsset= Resources.Load<TextAsset>(subId+"_inputParam_0917");
+		{	TextAsset jsonTextAsset= Resources.Load<TextAsset>(subId+"_inputParam_1001");
 			if (jsonTextAsset!=null){
 				Debug.Log("load Resources/"+subId+"_inputParams_0917");
 				the_JSON_string=jsonTextAsset.text;
@@ -172,7 +173,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		curr_norm2D=phy2DtoNorm2D(char2D);
 		yield return initialiseObjList();
 
-		yield return startOfExp();	
+	/*	yield return startOfExp();	
 		yield return propFollowingTask();
 		yield return objectLocationLearnPhase();
 
@@ -180,10 +181,11 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		startLoc=json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
 		yield return objectLocationTestPhase(learnOrder,startLoc,1);
 
+
         //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
         //	startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
         //	yield return objectLocationTestPhase(learnOrder,startLoc,2);
-
+*/
         if (distType == "Euclid")
         {
             yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
@@ -455,12 +457,14 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		obj3D.eulerAngles=new Vector3(0,rotY,0);
 	}
 	Vector3 norm2DtoPhy3D(Vector3 normPos2D,Transform obj3D){
-		// convert normalised 2D coordinate onto 3D coordinate in Unity
-		// input should be x=(-1,1), y=(0,1)
-		// when I adjust the size/offset of environment on Unity, I should adjust this part correctly
-		// I also have to update "conv3Dto2D" function correctly
-		// because it's not simple linear transformation matrix, I can't just use the inverse of rigic body transformatio matrix here
-		float tmpx=0;float tmpy=0; float tmpz=0;
+        // convert normalised 2D coordinate onto 3D coordinate in Unity
+        // input should be x=(-1,1), y=(0,1)
+        // when I adjust the size/offset of environment on Unity, I should adjust this part correctly
+        // I also have to update "conv3Dto2D" function correctly
+        // because it's not simple linear transformation matrix, I can't just use the inverse of rigic body transformatio matrix here
+        float Radius = 0;
+
+        float tmpx =0;float tmpy=0; float tmpz=0;
 		float rotY=normPos2D.z;
 		Vector3 baseNormal=new Vector3(0,0,0);// base Euler angles on the surface
 		switch (envType)
@@ -481,7 +485,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 				}
 				break;
 			case 2: // half cylinder
-				if (normPos2D.x<0){
+                Radius = 25 / Mathf.PI;
+                if (normPos2D.x<0){
 					tmpx=normPos2D.x*sqDim+0f;
 					tmpy=0f;
 					tmpz=normPos2D.y*sqDim-25f;
@@ -497,7 +502,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 				}				
 				break;
 			case 3: //S shape curve
-				if (normPos2D.x<0){
+                Radius = 25 / Mathf.PI;
+                if (normPos2D.x<0){
 					tmpx=normPos2D.x*sqDim+0f;
 					tmpy=0f;
 					tmpz=normPos2D.y*sqDim-40f;
@@ -525,7 +531,28 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 					baseNormal=new Vector3(0,0,0);
 				}				
 				break;
-			
+            
+
+            case 4: // 270deg cylinder
+                //Radius = 25 / Mathf.PI*2/3;
+                Radius = 5.3f;
+                if (normPos2D.x < 0)
+                {
+                    tmpx = normPos2D.x * sqDim + 0f;
+                    tmpy = 0f;
+                    tmpz = normPos2D.y * sqDim - 55f;
+
+                    baseNormal = new Vector3(0, 0, 0);
+                }
+                if (normPos2D.x >= 0)
+                {
+                    tmpx = Mathf.Sin(normPos2D.x * Mathf.PI*3/2) * Radius + 0f; //
+                    tmpy = -Mathf.Cos(normPos2D.x * Mathf.PI*3/2) * Radius + Radius;
+                    tmpz = normPos2D.y * sqDim - 55f;
+
+                    baseNormal = new Vector3(0, 0, (normPos2D.x * Mathf.PI*3/2) * Mathf.Rad2Deg);
+                }
+                break;
 		}
 
 		Vector3 outPos3D=new Vector3(tmpx,tmpy,tmpz);
