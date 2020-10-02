@@ -80,34 +80,36 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	public int[] debugInt;
 	public Vector2[] debugVec2;
 	public Vector3[] debugVec3;
-	int sex,age, subSuffix;
+	int sex,age;
+    string subSuffix;
 	public GameObject corridor_floor, corridor_openWalls,corridor_closedWalls, curve_floor, curve_openWalls,curve_closedWalls;
 	int isOpenEnv;
     string distType;
 
 	private string currentLocalTime,currentGMTime;
 	public string overviewFn;// text file for summary of start/end of experiment
-	IEnumerator Start () {
-			
-		//int subNum=1;
-		int subNum=Random.Range(1,50);
-        subNum = 8;
-		subId="msub"+subNum.ToString("D2");
-		subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
-		overviewFn=subId+"_"+subSuffix+"_overview_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
+    IEnumerator Start() {
 
-		pointAccum=0;//bonus point start at 0;
-		text_topleft.text="";
-		deli="\t";
+        //int subNum=1;
+        int subNum = Random.Range(1, 50);
+        //subNum = 8;
+        subId = "msub" + subNum.ToString("D2");
+        //subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
+        
+        pointAccum = 0;//bonus point start at 0;
+        text_topleft.text = "";
+        deli = "\t";
         envType = 4;//270deg cylinder
-        isOpenEnv =1;
+        isOpenEnv = 1;
         distType = "Euclid";
-		EnvironmentToggle(isOpenEnv,0);
-	
-		
+     //   EnvironmentToggle(isOpenEnv, 0);
+
+        string tmp1 = "abcde"; string tmp2 = "xyz";
+        Debug.Log("tmp1="+tmp1 + "_" + tmp1.Substring(1, 3));
+        Debug.Log("tmp2="+tmp2 + "_" + tmp2.Substring(1, 2));
 		string PID="null";
 		string fullURL="";
-	#if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL && !UNITY_EDITOR
 		// extract Prolific ID from URL
 		var parameters=URLParameters.GetSearchParameters();
 		fullURL=URLParameters.Href;
@@ -122,11 +124,12 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 			PID="null";
 			yield return new WaitForSeconds(300);
 		}
-	#endif
-	
+#endif
+        subSuffix = PID.Substring(1,3);
 		string tmptext=fullURL+"\n"+PID;
 		yield return getTime();
-		tmptext=tmptext+"\n"+Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of exp";
+        overviewFn = subId + "_" + subSuffix + "_overview_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        tmptext = tmptext+"\n"+Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of exp";
 		StartCoroutine(save2file(overviewFn,tmptext));
 	
 		yield return consentPhase();
@@ -173,7 +176,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		curr_norm2D=phy2DtoNorm2D(char2D);
 		yield return initialiseObjList();
 
-	/*	yield return startOfExp();	
+		yield return startOfExp();	
 		yield return propFollowingTask();
 		yield return objectLocationLearnPhase();
 
@@ -185,12 +188,12 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
         //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
         //	startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
         //	yield return objectLocationTestPhase(learnOrder,startLoc,2);
-*/
+
         if (distType == "Euclid")
         {
             yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
-            yield return objectDistEstimate_pairwise();
             yield return objectDistEstimate_2AFC();
+            yield return objectDistEstimate_pairwise();
         }
         if (distType == "Path")
         {
@@ -669,7 +672,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	IEnumerator propFollowingTask(){
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of propFollowingTask";
-		StartCoroutine(save2file(overviewFn,tmptext));
+        string savefn = subId + "_" + subSuffix + "_familiarisation_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 		
 		Vector3[] pos2DList=json2vector3(taskparam["familiarise"]["path"]); // load Vector3 prop locations
 		maxtrial=pos2DList.Length-1;
@@ -706,7 +710,6 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		float inittime=Time.time;
 		float timelimit=5*60;// max 6min
 		
-		string savefn=subId+"_"+subSuffix+"_familiarisation_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
 		string savetext="";
 		
 		maxtrial=pos2DList.Length-1;
@@ -915,17 +918,22 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
         //2) turning subject towards the target object
         //3) increase the arrow to reach the object
         //4) repeat this process
-        Vector3[] startLoc=new Vector3[5];
+        Vector3[] startLoc=new Vector3[7];
 		startLoc[1]=new Vector3(-0.1f,0.1f,90f);
 		startLoc[2]=startLoc[1];
         startLoc[3] = startLoc[1];
         startLoc[4] = startLoc[1];
+        startLoc[5] = startLoc[1];
+        startLoc[6] = startLoc[1];
 
-        Vector3[] targetLoc=new Vector3[5];
+        Vector3[] targetLoc=new Vector3[7];
 		targetLoc[1]=new Vector3(0.9f,0.9f,90f);
 		targetLoc[2]=new Vector3(0.9f,0.1f,0f);
-        targetLoc[3] = new Vector3(-0.2f, 0.3f, 0f);
-        targetLoc[4] = new Vector3(-0.9f, 0.1f, 0f);
+        targetLoc[3] = new Vector3(0.6f, 0.5f, 0f);
+        targetLoc[4] = new Vector3(0.3f, 0.8f, 0f);
+        targetLoc[5] = new Vector3(-0.2f, 0.3f, 0f);
+        targetLoc[6] = new Vector3(-0.9f, 0.1f, 0f);
+        
         trial = 1;
         Vector3 start3Dpos = norm2DtoPhy3D(startLoc[trial], character); //first place hte subject in the starting position
         moveConstraint = 0;    
@@ -984,7 +992,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objDistEst_2AFC";
-		StartCoroutine(save2file(overviewFn,tmptext));
+        string savefnSum = subId + "_" + subSuffix + "_DistEst2AFC_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 
 		text_top.text="";
 		text_topright.text="";
@@ -1013,7 +1022,6 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		text_fullscreen.text="";
 
 		distEstHolder_2AFC.SetActive(true);
-		string savefnSum=subId+"_"+subSuffix+"_DistEst2AFC_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
 		//Vector3[] distEstOrder=new Vector3[3];
 		//distEstOrder[1]=new Vector3(1,2,3);
 		//distEstOrder[2]=new Vector3(6,7,5);
@@ -1066,7 +1074,9 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	IEnumerator objectDistEstimate_egocentric(){
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objDistEst_egocentric";
-		StartCoroutine(save2file(overviewFn,tmptext));
+
+        string savefnSum = subId + "_" + subSuffix + "_DistEstEgo_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 		// 1. show start and end object
 		// 2. replace subject at the start line, disable rotation cue/backward cue
 		// 3. let them move straight and wait until they press the button
@@ -1106,7 +1116,6 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		distEstEgoImg1.gameObject.SetActive(true);
 		distEstEgoImg2.gameObject.SetActive(true);
 		string savetext="";
-		string savefnSum=subId+"_"+subSuffix+"_DistEstEgo_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
 		for (trial=1;trial<distEstOrder_ego.Length;trial++){
 			// temporarily hide the view because subject will be relocated
 			character.position=startPosForDistEst;
@@ -1166,7 +1175,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
         
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objDistEst_pairwise";
-		StartCoroutine(save2file(overviewFn,tmptext));
+        string savefnSum = subId + "_" + subSuffix + "_DistEst1_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 
 		translateAllow=false; rotateAllow=false;
 		text_top.text="";text_topright.text="";
@@ -1203,7 +1213,6 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		distEstimateHolder.SetActive(true); 
 		Vector2[] distEstOrder=json2vector2(taskparam["distEstPair"]["pairList"]);
 		maxtrial=distEstOrder.Length-1;
-		string savefnSum=subId+"_"+subSuffix+"_DistEst1_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
 		for (trial=1; trial<distEstOrder.Length; trial++){
 			text_top.text="How far are these two items? Adjust the slider and press the spacebar";
 			text_topright.text=trial+"/"+(distEstOrder.Length-1);
@@ -1219,7 +1228,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			}
 			RT=Time.time-inittime;
 			string savetextSum="";
-			savetextSum=trial+deli+item1+deli+item2+deli+distEstSlider.value+deli+RT;
+			savetextSum=trial+deli+item1+deli+item2+deli+distEstSlider.value+deli+RT+deli+inittime;
 			StartCoroutine(save2file(savefnSum,savetextSum));
 
 			distEstCue1.sprite=null;
@@ -1239,7 +1248,9 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	IEnumerator objectLocationTestPhase(int[] learnOrder, Vector3[] startLoc, int run){
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objLocTest";
-		StartCoroutine(save2file(overviewFn,tmptext));
+        string savefnSum = subId + "_" + subSuffix + "_ObjLoc_TestRun" + run + "Sum_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        string savefnTraj = subId + "_" + subSuffix + "_ObjLoc_TestRun" + run + "Traj_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 
 		pointAccum=0;//reset the point
 		text_topleft.text="";
@@ -1281,9 +1292,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		{	norm2DtoPhy3D(objLoc[j],objList_sub[j].transform);
 			objList_sub[j].SetActive(false);
 		}
-		string savefnSum=subId+"_"+subSuffix+"_ObjLoc_TestRun"+run+"Sum_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
-		string savefnTraj=subId+"_"+subSuffix+"_ObjLoc_TestRun"+run+"Traj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
-
+		
 		float sumError=0f; //to calculate the mean distance error at the end of task
 		int nCompleteTrial=0;
 
