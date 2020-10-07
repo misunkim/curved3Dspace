@@ -4321,10 +4321,11 @@ MonoBehaviour:
     - m_Text: I tried to remember the views (walls, floors, background, etc) from
         the picture cube location. (e.g. first-person perspective)
       m_Image: {fileID: 0}
-    - m_Text: I tried to create the map of the environment in my mind, and located
-        all picture cubes on the map (e.g. third-person perspective)
+    - m_Text: I tried to create the precise 3D map of the environment in my mind,
+        and located all picture cubes on the map (e.g. bird's eye view)
       m_Image: {fileID: 0}
-    - m_Text: Something between the two strategies
+    - m_Text: I tried to create the map of the environment in my mind, but it was
+        rather a simple 2D map (bird's eye view)
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -11327,13 +11328,14 @@ MonoBehaviour:
     m_Options:
     - m_Text: select here
       m_Image: {fileID: 0}
-    - m_Text: I imagined standing at one of the picture cube and drawing a line to
-        other object (first-person perspective)
+    - m_Text: I imagined myself moving from one picture to other picture, and estimate
+        the distance (first-person perspective)
       m_Image: {fileID: 0}
-    - m_Text: I had the map of 3D environment in my mind and measured the distance
-        on that map (3rd-person perspective or bird's eye view)
+    - m_Text: I had the map of 3D curved environment in my mind and measured the distance
+        on that map (bird's-eyeview)
       m_Image: {fileID: 0}
-    - m_Text: Something between the two strategies
+    - m_Text: I had the map of the environment in my mind, but it was rather a simple,
+        flat map.
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15430,7 +15432,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: a72944cfaa56743d7a47d45b115dc4d9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b5b25d23569ce4143b9d76254a8e4faa, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1

@@ -92,7 +92,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 
         //int subNum=1;
         int subNum = Random.Range(1, 50);
-        //subNum = 8;
+        //subNum = 1;
         subId = "msub" + subNum.ToString("D2");
         //subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
         
@@ -101,7 +101,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
         deli = "\t";
         envType = 4;//270deg cylinder
         isOpenEnv = 1;
-        distType = "Euclid";
+        distType = "Path";
      //   EnvironmentToggle(isOpenEnv, 0);
 
         string tmp1 = "abcde"; string tmp2 = "xyz";
@@ -197,9 +197,9 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
         }
         if (distType == "Path")
         {
-            yield return objectDistEstimate_egocentric();
-            yield return objectDistEstimate_pairwise();
+        //    yield return objectDistEstimate_egocentric();
             yield return objectDistEstimate_2AFC();
+            yield return objectDistEstimate_pairwise();
         }	
 		yield return debriefPhase();
 		yield return endOfExp();
@@ -632,8 +632,9 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		tmptext=tmptext+"\nImagine that you are driving a car in the virtual world where the car can move up/down the steepest hill without falling. It can even move upside down.";
 		tmptext=tmptext+" It's somewhat similar to a rollercoaster that always moves along the track.";
 		tmptext=tmptext+"\n\nI am investigating how people perceive such environment and how well they find their way within it. You will do a series of tasks in this virtual world.";
-		tmptext=tmptext+" <color=red>Instruction will be given on the top of the screen throughout the experiment.</color>";
-		tmptext=tmptext+"\n\nClick next to begin.";
+        tmptext = tmptext + " <color=red>Instruction will be given on the top of the screen throughout the experiment. The experiment will take about 30 min in total. If you need to go to the restroom or check your phone, do it now. Once you start the experiment, please focus on the experiment and complete it without distraction. </color>";
+        tmptext = tmptext + " <color=blue>(The data will be difficult to analyse if you suddenly take a long break during the middle of the experiment!) </color>";
+        tmptext = tmptext+"\n\nClick next to begin.";
 		text_fullscreen.text=tmptext;
 		img_fullscreen.SetActive(true); //put background image
 		
@@ -1501,7 +1502,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 	IEnumerator objectLocationLearnPhase(){
 		yield return getTime();
 		string tmptext=Time.time.ToString("0")+deli+currentGMTime+deli+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+deli+"start of objLocLearn";
-		StartCoroutine(save2file(overviewFn,tmptext));
+        string savefnTraj = subId + "_" + subSuffix + "_ObjLoc_LearnPhaseTraj_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        StartCoroutine(save2file(overviewFn,tmptext));
 		
 		text_topright.text="";
 		timerSlider.value=0;
@@ -1538,8 +1540,7 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		// wait subject to grab the object
 		// give some seconds to encode the location
 		
-		string savefnTraj=subId+"_"+subSuffix+"_ObjLoc_LearnPhaseTraj_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
-
+		
 		for (trial=1; trial<learnOrder.Length;trial++){
 			text_topright.text=trial+"/"+(learnOrder.Length-1);
 			
