@@ -101,7 +101,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
         deli = "\t";
         envType = 4;//270deg cylinder
         isOpenEnv = 1;
-        distType = "Path";
+        distType = "Euclid";
      //   EnvironmentToggle(isOpenEnv, 0);
 
         string tmp1 = "abcde"; string tmp2 = "xyz";
@@ -176,13 +176,13 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 		curr_norm2D=phy2DtoNorm2D(char2D);
 		yield return initialiseObjList();
 
-		yield return startOfExp();	
+	//	yield return startOfExp();	
 		yield return propFollowingTask();
 		yield return objectLocationLearnPhase();
 
 		learnOrder=json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
 		startLoc=json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
-		yield return objectLocationTestPhase(learnOrder,startLoc,1);
+	//	yield return objectLocationTestPhase(learnOrder,startLoc,1);
 
 
         //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
