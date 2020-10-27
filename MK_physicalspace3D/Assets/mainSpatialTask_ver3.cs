@@ -170,7 +170,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 
 		distCollide=1f;
 
-		moveConstraint=1;//by default, I yoke the move on 2D flattenend and 3D
+		moveConstraint=3;//by default, I yoke the move on 2D flattenend and 3D (moveConstraint=1)
 
 		
 		curr_norm2D=phy2DtoNorm2D(char2D);
@@ -330,7 +330,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 			character.position=new Vector3(xPos,character.position.y,character.position.z);
 			
 		}
-		if (moveConstraint==0){// free movement
+		if (moveConstraint==0){// forward only driving movement (without pitch)
 			RaycastHit hit;
 			Vector3 p1=character.position+character.up*0.2f; //capsule cast bottom position, depending on the hover distance between the character center and ground
 			Vector3 p2=character.position+character.up*1; //capsule cast top position 
@@ -353,8 +353,40 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 			
 			
 		}
-		
-		if (Input.GetKey(KeyCode.F1))
+        if (moveConstraint == 3) // fly movement
+        {
+            
+            float rotationX = character.localEulerAngles.y + Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+            float rotationY = character.localEulerAngles.x - Input.GetAxis("Vertical") * rotateSpeed * Time.deltaTime;
+          //  character.localEulerAngles = new Vector3(rotationY, rotationX, 0);
+
+            character.Rotate(0, Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime, 0,Space.World);
+            character.Rotate(-Input.GetAxis("Vertical") * rotateSpeed * Time.deltaTime, 0, 0);
+
+
+            Vector3 p1 = character.position + character.up * -0.2f; //capsule cast bottom position, depending on the hover distance between the character center and ground
+            Vector3 p2 = character.position + character.up * 0.2f; //capsule cast top position 
+            Debug.DrawLine(p1, p1 + character.forward * distCollide, Color.red);
+            Debug.DrawLine(p2, p2 + character.forward * distCollide, Color.red);
+
+            RaycastHit hit;
+            if (Input.GetKey(KeyCode.W))
+            {
+                if (Physics.CapsuleCast(p1, p2, characterRadius, character.forward, out hit, distCollide))
+                    Debug.Log("touch front:" + hit.collider);
+                else
+                    character.Translate(Vector3.forward * translateSpeed * Time.deltaTime);
+            }
+            if (Input.GetKey(KeyCode.S))
+            {
+                if (Physics.CapsuleCast(p1, p2, characterRadius, -character.forward, out hit, distCollide))
+                    Debug.Log("touch back:" + hit.collider);
+                else
+                    character.Translate(-Vector3.forward * translateSpeed * Time.deltaTime);
+            }
+        }
+
+        if (Input.GetKey(KeyCode.F1))
 		{	if(Input.GetKeyDown(KeyCode.F2))
 			{	trial=maxtrial;
 				text_top.text="jump to the last trial";
