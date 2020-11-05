@@ -22,6 +22,7 @@ using UnityEngine.EventSystems;
 // git commit test 2020/08/17 16:36
 public class mainSpatialTask_ver4 : MonoBehaviour
 {
+    public int rotDir = 1;
     [DllImport("__Internal")]
     private static extern double GetDPI();
 
@@ -30,7 +31,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     // GUI elements
     public Button nextButton;
     public Text text_top, text_fullscreen, text_topleft, text_topright, text_warning;
-    public GameObject img_fullscreen;
+    public GameObject img_fullscreen,img_instructObjLearn, img_instructFamil, img_instruct2AFC, img_instructSlider;
 
     public GameObject debriefHolder, consentHolder, buttonProlific, demographHolder;
     public GameObject[] debriefQ, debriefQ2;//debrief dropdown questions(debrieefQ) and debrief text inputfield questions(debriefQ2)
@@ -89,12 +90,15 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
     private string currentLocalTime, currentGMTime;
     public string overviewFn;// text file for summary of start/end of experiment
+
+    private string strLogTraj, strLogTrajExtra;
+
     IEnumerator Start()
     {
 
         //int subNum=1;
         int subNum = Random.Range(1, 50);
-        //subNum = 1;
+    //    subNum = 14;
         subId = "msub" + subNum.ToString("D2");
         //subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
 
@@ -176,24 +180,27 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         distCollide = 1f;
 
-        moveConstraint = 1;//by default, I yoke the move on 2D flattenend and 3D
-
+        moveConstraint = 3;//by default, I yoke the move on 2D flattenend and 3D
+        if (moveConstraint == 1)
+            characterCamera.localPosition = new Vector3(0,4,0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
+        if (moveConstraint == 3)
+            characterCamera.localPosition = new Vector3(0, 0, 0); //when flying, it is more natural when eye and center of mass are aligned
 
         curr_norm2D = phy2DtoNorm2D(char2D);
         yield return initialiseObjList();
 
-        //	yield return startOfExp();	
+     	yield return startOfExp();	
         yield return propFollowingTask();
         yield return objectLocationLearnPhase();
 
         learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
         startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
-                                                                          //	yield return objectLocationTestPhase(learnOrder,startLoc,1);
+        yield return objectLocationTestPhase(learnOrder,startLoc,1);
 
 
-        //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
-        //	startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
-        //	yield return objectLocationTestPhase(learnOrder,startLoc,2);
+       // learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
+       // startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
+       // yield return objectLocationTestPhase(learnOrder,startLoc,2);
 
         if (distType == "Euclid")
         {
@@ -299,7 +306,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     }
     void Update()
     {
-        if (moveConstraint == 1) // update the locationon the flattened surface(2D) and then translate into 3D
+        if (moveConstraint == 1) // movement on a flattened surface(2D) that will converted to 3D coordinates (like cylinder.sphere)
         {
             /*	if (Input.GetKeyDown(KeyCode.Alpha3))
                     StartCoroutine(simulTrans(new Vector3(-0.8f,0.2f,45), new Vector3(-0.4f,0.6f,45)));			
@@ -336,21 +343,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
             norm2DtoPhy3D(curr_norm2D, character);// place character on 3D location using the normalised 2D coordinate and facing direction 
         }
-        if (moveConstraint == 2)//when they move along the corridor for the egocentric distance estimation task
-        {
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                character.Translate(Vector3.forward * translateSpeed * Time.deltaTime);
-            }
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                character.Translate(-Vector3.forward * translateSpeed * Time.deltaTime);
-            }
-            float xPos = Mathf.Clamp(character.position.x, -24f, 38.7f);
-            character.position = new Vector3(xPos, character.position.y, character.position.z);
 
-        }
-        if (moveConstraint == 0)
+        if (moveConstraint == 0) // simple driving movement on the flat environment
         {// free movement
             RaycastHit hit;
             Vector3 p1 = character.position + character.up * 0.2f; //capsule cast bottom position, depending on the hover distance between the character center and ground
@@ -376,7 +370,47 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
 
         }
+        if (moveConstraint == 3) // fly movement
+        {
 
+            float rotationX = character.localEulerAngles.y + Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime;
+            float rotationY = character.localEulerAngles.x - Input.GetAxis("Vertical") * rotateSpeed * Time.deltaTime;
+            //  character.localEulerAngles = new Vector3(rotationY, rotationX, 0);
+            
+            if (character.eulerAngles.x > -90 & character.eulerAngles.x < 90)
+                rotDir = 1;
+            else
+                rotDir = 1;
+            
+            if (rotateAllow)
+            {   character.Rotate(0, 1*Input.GetAxis("Horizontal") * rotateSpeed * Time.deltaTime, 0, Space.Self);
+                character.Rotate(-Input.GetAxis("Vertical") * rotateSpeed * Time.deltaTime, 0, 0, Space.Self);
+            }
+
+            Vector3 p1 = character.position + character.up * -0.2f; //capsule cast bottom position, depending on the hover distance between the character center and ground
+            Vector3 p2 = character.position + character.up * 0.2f; //capsule cast top position 
+            Debug.DrawLine(p1, p1 + character.forward * distCollide, Color.red);
+            Debug.DrawLine(p2, p2 + character.forward * distCollide, Color.red);
+
+            RaycastHit hit;
+            
+            if (translateAllow)
+            {   if (Input.GetKey(KeyCode.W))
+                {
+                    if (Physics.CapsuleCast(p1, p2, characterRadius, character.forward, out hit, distCollide))
+                        Debug.Log("touch front:" + hit.collider);
+                    else
+                        character.Translate(Vector3.forward * translateSpeed * Time.deltaTime);
+                }
+                if (Input.GetKey(KeyCode.S))
+                {
+                    if (Physics.CapsuleCast(p1, p2, characterRadius, -character.forward, out hit, distCollide))
+                        Debug.Log("touch back:" + hit.collider);
+                    else
+                        character.Translate(-Vector3.forward * translateSpeed * Time.deltaTime);
+                }
+            }
+        }
         if (Input.GetKey(KeyCode.F1))
         {
             if (Input.GetKeyDown(KeyCode.F2))
@@ -390,6 +424,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha0))
                 Debug.Log(GetScreenInfo());
         }
+       
+            
 
 
         /*		if (Input.GetKeyDown(KeyCode.Alpha1)) //this should be removed
@@ -415,7 +451,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 }
         */
     }
-
+    void characterVerticalOffset(){
+        character.Translate(new Vector3(0,1,0),Space.Self);// shift the camera location 1 unit above the surface
+    }
     IEnumerator simulTrans(Vector3 start, Vector3 target)
     {
         //
@@ -677,10 +715,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         timerSlider.gameObject.SetActive(false);
         Debug.Log("startOfExp()");
         string tmptext = "<b>Introduction:</b>";
-        tmptext = tmptext + "\nImagine that you are driving a car in the virtual world where the car can move up/down the steepest hill without falling. It can even move upside down.";
-        tmptext = tmptext + " It's somewhat similar to a rollercoaster that always moves along the track.";
+        tmptext = tmptext + "\nImagine that you are flying in the virtual world which has no gravity. You can freely rotate yourself in the air.";
         tmptext = tmptext + "\n\nI am investigating how people perceive such environment and how well they find their way within it. You will do a series of tasks in this virtual world.";
-        tmptext = tmptext + " <color=red>Instruction will be given on the top of the screen throughout the experiment. The experiment will take about 30 min in total. If you need to go to the restroom or check your phone, do it now. Once you start the experiment, please focus on the experiment and complete it without distraction. </color>";
+        tmptext = tmptext + " <color=red>Instruction will be given at the top of the screen throughout the experiment. The experiment will take about 30~45 min in total. If you need to go to the restroom or check your phone, do it now.</color> Once you start the experiment, please focus on the experiment and complete it without distraction. ";
         tmptext = tmptext + " <color=blue>(The data will be difficult to analyse if you suddenly take a long break during the middle of the experiment!) </color>";
         tmptext = tmptext + "\n\nClick next to begin.";
         text_fullscreen.text = tmptext;
@@ -742,18 +779,20 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         text_top.text = "";
         img_fullscreen.SetActive(true); //put background image
         tmptext = "<b>Familiarisation:</b>";
-        tmptext = tmptext + "\nLet's first practice how to move around in this virtual world. You can simply move forward/backward by pressing the up/down arrow keys, and you can steer your vehicle right/left by pressing the right/left arrow keys.";
-        tmptext = tmptext + "\n\nIn this task, you should find and move to a traffic cone. Once you reach the cone, the cone will disappear and reappear somewhere else. Then move to the cone again";
-        tmptext = tmptext + " This task will last for a few minutes.";
-        tmptext = tmptext + "\n<b>Tip:</b> An arrow on the ground will guide you to the traffic cone. This guide arrow is visible only when you are far away from the cone. (When you are close enough to the cone, you won't need a guide)";
+        tmptext = tmptext + "\nLet's first practice how to move around in this virtual world. You can move forward/backward by pressing W/S keys, and you can rotate right/left/up/down by pressing the arrow keys on the keyboard.";
+        tmptext = tmptext + "\n\nIn this task, you should find and move to a traffic cone on the grass (example below). Once you reach the traffic cone, the cone will disappear and reappear somewhere else. Then, move to the cone again. You will repeat this for a few minutes.";
+        tmptext = tmptext + "\n\nControlling the movement (especially, turning around) in 3D space can be a bit difficult. Just try your best. <color=red>If you feel very dizzy and nauseous, you should stop the experiment immediately. </color>";
+        tmptext = tmptext + "\nAnd if you hit the walls and can't move further, simply move backward or change your direction of motion!";
         tmptext = tmptext + "\n\nClick next to begin.";
 
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
+        img_instructFamil.SetActive(true);
         while (moveToNext == 0)
         {
             yield return null;
         }
+        img_instructFamil.SetActive(false);
         moveToNext = 0;//
         nextButton.gameObject.SetActive(false);
         img_fullscreen.SetActive(false);
@@ -761,49 +800,43 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         timerSlider.gameObject.SetActive(true);
 
         Debug.Log("start of propFollowingTask()");
-        text_top.text = "Find the cone and move to it (arrow keys)";
+        text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
         float inittime = Time.time;
-        float timelimit = 5 * 60;// max 6min
+        float timelimit = 5 * 60;// max 5 min
 
-        string savetext = "";
+        // place the character in some starting position
+        norm2DtoPhy3D(new Vector3(0.5f,0.5f,80),character);
+        characterVerticalOffset();
 
         maxtrial = pos2DList.Length - 1;
         trial = 1;
+
+        strLogTraj = "";//initialise log trajectory string for output file
+        strLogTrajExtra = "";//initialise extra information for the output trajectory file
+        InvokeRepeating("logTrajectory", 0f, 0.1f);//from now on, log character's position and rotation info for every 0.1sec
         while (Time.time - inittime < timelimit & trial < pos2DList.Length)
         {
+            strLogTrajExtra = trial.ToString();
+
             text_topright.text = trial + "/" + (pos2DList.Length - 1);
             timerSlider.value = (Time.time - inittime) / timelimit;
             norm2DtoPhy2D(pos2DList[trial], prop2D); // place the prop (e.g. traffic cone) to predefined location
             norm2DtoPhy3D(pos2DList[trial], prop3D); // place the prop (e.g. traffic cone) to predefined location
-            placeGuideArrow(curr_norm2D, pos2DList[trial]);
-            RaycastHit hit;
-            Vector3 p1 = character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
-            Vector3 p2 = character.position + character.up * 1; //capsule cast top position 
-
-            Debug.DrawLine(p1, p1 + character.forward * 2, Color.red);
-            Debug.DrawLine(p2, p2 + character.forward * 2, Color.blue);
-
-            if (Physics.CapsuleCast(p1, p2, characterRadius, character.forward, out hit, distCollide))
+            
+            if (hitCheck("Respawn"))
             {
-                Debug.Log("hit forward"); // if character face any wall
-                if (hit.collider.name == prop3D.name)
-                {//If character get sufficiently close to the prop
-                    text_top.text = "good";
-                    yield return new WaitForSeconds(0.5f);
-                    Debug.Log("touch:" + hit.collider);
-                    trial++;
-                    text_top.text = "Find the cone and move to it (arrow keys)";
-                }
+                text_top.text = "good";
+                yield return new WaitForSeconds(0.5f);
+                trial++;
+                text_top.text = "Find the cone and move to it (rotation: arrow keys, move:W/S)";
+                
             }// then move the object
-
-            float cameraPitch = characterCamera.localEulerAngles.x;
-            //savetext=savetext+Time.time.ToString("F3")+deli+MK2string(character.position)+deli+MK2string(character.rotation)+deli+cameraPitch.ToString("F1")+"\n";
-            savetext = savetext + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + "\n";// should I record only the normalised position
-
+            
             //	if (Input.GetKeyDown(KeyCode.Escape)) break; //break condition just in case (for debugging) this should be removed before posting online in case subject accidenatlly press the wrong button
             yield return null; // yield return null is absolute necessary for while loop!
         }
-        StartCoroutine(save2file(savefn, savetext));
+        CancelInvoke();//cancel the logTrajectory function
+        StartCoroutine(save2file(savefn, strLogTraj));
         // tell subjects that he completed the task and guide to the next task.. (how? full screen text? top text?)
         prop2D.gameObject.SetActive(false);
         prop3D.gameObject.SetActive(false);
@@ -991,24 +1024,22 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         //2) turning subject towards the target object
         //3) increase the arrow to reach the object
         //4) repeat this process
-        Vector3[] startLoc = new Vector3[7];
+        Vector3[] startLoc = new Vector3[4];
         startLoc[1] = new Vector3(-0.1f, 0.1f, 90f);
         startLoc[2] = startLoc[1];
         startLoc[3] = startLoc[1];
-        startLoc[4] = startLoc[1];
-        startLoc[5] = startLoc[1];
-        startLoc[6] = startLoc[1];
-
-        Vector3[] targetLoc = new Vector3[7];
+        
+        Vector3[] targetLoc = new Vector3[4];
         targetLoc[1] = new Vector3(0.9f, 0.9f, 90f);
         targetLoc[2] = new Vector3(0.9f, 0.1f, 0f);
-        targetLoc[3] = new Vector3(0.6f, 0.5f, 0f);
-        targetLoc[4] = new Vector3(0.3f, 0.8f, 0f);
-        targetLoc[5] = new Vector3(-0.2f, 0.3f, 0f);
-        targetLoc[6] = new Vector3(-0.9f, 0.1f, 0f);
+        targetLoc[3] = new Vector3(-0.9f, 0.1f, 0f);
 
         trial = 1;
         Vector3 start3Dpos = norm2DtoPhy3D(startLoc[trial], character); //first place hte subject in the starting position
+        
+        characterCamera.localPosition = new Vector3(0,4,0); // Even in flying condition I will temporarily give vertical offset to camera so that arrow attached to the character (in the driving mode) can be visible
+        
+        
         moveConstraint = 0;
         float timeinit;
         for (trial = 1; trial < startLoc.Length; trial++)
@@ -1072,7 +1103,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         StartCoroutine(save2file(overviewFn, tmptext));
 
         text_top.text = "";
-        text_topright.text = "";
+        text_topright.text = "";text_topleft.text="";
         img_fullscreen.SetActive(true); //put background image
         if (distType == "Path")
         {
@@ -1087,10 +1118,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             else
                 tmptext = "DistType shoulld be either 'Path' or 'Euclid'. Something is wrong. Contact the researcher";
         }
-        tmptext = tmptext + "\nPress 1 or 2 to indicate which picture cube is closer to the reference picture cube. ";
+        tmptext = tmptext + "\nPress 1 or 2 to indicate which picture cube is closer to the reference picture cube. (example below: Is Elephant closer to the Banana or Kiwi?) ";
         tmptext = tmptext + "\n\nClick next to begin.";
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
+        img_instruct2AFC.SetActive(true);
         while (moveToNext == 0)
         {
             yield return null;
@@ -1098,6 +1130,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         moveToNext = 0;//
         nextButton.gameObject.SetActive(false);
         text_fullscreen.text = "";
+        img_instruct2AFC.SetActive(false);
 
         distEstHolder_2AFC.SetActive(true);
         //Vector3[] distEstOrder=new Vector3[3];
@@ -1168,7 +1201,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         moveConstraint = 0;//now I will cut the link between the 2D flattened surface and 3D, and directly move the 3D character
 
         text_top.text = "";
-        text_topright.text = "";
+        text_topright.text = "";text_topleft.text="";
+
         timerSlider.gameObject.SetActive(false);
         img_fullscreen.SetActive(true); //put background image
         tmptext = "<b>Distance estimation task:</b>\nIn this task, you should imagine how long it would take when you move from one picture cube to the other picture cube.";
@@ -1269,7 +1303,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         StartCoroutine(save2file(overviewFn, tmptext));
 
         translateAllow = false; rotateAllow = false;
-        text_top.text = ""; text_topright.text = "";
+        text_top.text = ""; text_topright.text = "";text_topleft.text="";
         timerSlider.gameObject.SetActive(false);
         timerSlider.value = 0;
         img_fullscreen.SetActive(true); //put background image
@@ -1283,17 +1317,18 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         {
             if (distType == "Euclid")
             {
-                tmptext = tmptext + "In this task, you should estimate the straight line distance between one object location to the other object location";
+                tmptext = tmptext + "In this task, you should estimate the straight line distance between the two object locations.";
             }
             else
-                tmptext = "DistTYpe should be either 'Path' or 'Euclid'. Something is wrong! contact researcher";
+                tmptext = "DistType should be either 'Path' or 'Euclid'. Something is wrong! contact researcher";
         }
-        tmptext = tmptext + "\nYou will adjust the slider to indicate the distance from 'very close' to 'very far' (e.g. pair of pictures that can be farthest away in the environment).";
-        tmptext = tmptext + "\nPlease try to esimate the distance as precisely as you can. And try to use the whole range of the slider.";
+        tmptext = tmptext + "\nYou should click and move the slider from 'very close'(e.g. zero distance) to 'very far' (e.g. pair of pictures that can be farthest away in the environment). ";
+        tmptext = tmptext + "\n<b>Please try to esimate the distance as precisely as you can. </b>And try to use the whole range of the slider. (example shown below)";
         tmptext = tmptext + "\n\nClick next to begin.";
 
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
+        img_instructSlider.SetActive(true);
         while (moveToNext == 0)
         {
             yield return null;
@@ -1301,13 +1336,14 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         moveToNext = 0;//
         nextButton.gameObject.SetActive(false);
         text_fullscreen.text = "";
+        img_instructSlider.SetActive(false);
 
         distEstimateHolder.SetActive(true);
         Vector2[] distEstOrder = json2vector2(taskparam["distEstPair"]["pairList"]);
         maxtrial = distEstOrder.Length - 1;
         for (trial = 1; trial < distEstOrder.Length; trial++)
         {
-            text_top.text = "How far are these two items? Adjust the slider and press the spacebar";
+            text_top.text = "How far are these two items? Adjust the slider (click) and press the spacebar";
             text_topright.text = trial + "/" + (distEstOrder.Length - 1);
             int item1 = Mathf.RoundToInt(distEstOrder[trial].x);
             int item2 = Mathf.RoundToInt(distEstOrder[trial].y);
@@ -1365,15 +1401,15 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         if (run == 1)
         {
             tmptext = "<b>Object-location test run1:</b>";
-            tmptext = tmptext + "\nThis is a test phase. You should move to the remembered location of item that you learned previously.";
-            tmptext = tmptext + " Try to locate the item as precise and fast as you can. You will get a feedback by smily or frowning face.";
+            tmptext = tmptext + "\nThis is a test phase. In each trial, a picture cue will be shown at the beginning. You should move to the remembered location of the picture cube and press the spacebar.";
+            tmptext = tmptext + " <b>Try to locate the item as precise and fast as you can</b>. You will get a feedback by smiling or frowning face. Then, the picture cube will reappear so that you can see the correct location of the item again before the next trial begins. ";
             tmptext = tmptext + "\n\nClick next to begin.";
         }
         if (run == 2)
         {
             tmptext = "<b>Object-location test run2:</b>";
             tmptext = tmptext + "\nThis is the second round of the test phase. As before, you should move to the remembered location of item that you learned previously.";
-            tmptext = tmptext + " Try to locate the item as precise and fast as you can. You will get a feedback by smily or frowning face.";
+            tmptext = tmptext + " Try to locate the item as precise and fast as you can. You will get a feedback by smiling or frowning face. Then, you will have a chance to see the correct location of the item again. ";
             tmptext = tmptext + " Let's try to score the highest point in this round :)";
             tmptext = tmptext + "\n\nClick next to begin.";
         }
@@ -1401,10 +1437,17 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         lastlastError = new float[] { 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f };//initialize the error with some arbitrary large number
         lastError = new float[] { 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f };
 
+        int testPhase = 0;// 0 retrieval phase, subjects is moving toward the remembered location of the object; 1, feedback phase, subject is moving to touch the object; 2, confirmation phase, subject already reach the object but have not pressed the spacebar yet to start the next trial 
         for (trial = 1; trial < learnOrder.Length; trial++)
         {
             // in case of adaptive testing paradigm, I will skip the trial if subject has already remembered that object well
             Debug.Log("trial=" + trial);
+            testPhase = -1;// 
+            
+            strLogTraj = "";//initialise log trajectory string for output file
+            strLogTrajExtra = trial.ToString() + deli + learnOrder[trial] + deli + testPhase;//initialise extra information for the output trajectory file
+            InvokeRepeating("logTrajectory", 0f, 0.1f);//from now on, log character's position and rotation info for every 0.1sec
+        
             bool isAdaptiveTrialNum = true;
             bool isSkipTrial = false;
 
@@ -1433,8 +1476,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 GameObject currentObj = objList_sub[learnOrder[trial]];
                 // temporarily hide the view because subject will be relocated
                 norm2DtoPhy2D(startLoc[trial], char2D);
-                norm2DtoPhy3D(startLoc[trial], character);
-
+                norm2DtoPhy3D(startLoc[trial], character); // I probably need to update this part..
+                characterVerticalOffset();// give offset to self vertical axis
+                
 
                 // retriev phase
                 currentObj.SetActive(false);
@@ -1444,84 +1488,92 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 text_top.text = "Go to the " + objName_sub[learnOrder[trial]] + ", then press the spacebar";
                 translateAllow = false; rotateAllow = false;
                 yield return new WaitForSeconds(2);
+
+                testPhase = 0; //subject is able to move
                 translateAllow = true; rotateAllow = true;
                 imgCenter.gameObject.SetActive(false);
 
                 float inittime = Time.time;
-                float timelimit1 = 60f; // X sec to find the goal
+                float timelimit1 = 60*2f; // 120 sec to find the goal
                 string savetextSum = "";
-                string savetextTraj = "";
                 while (Time.time - inittime < timelimit1 & !Input.GetKeyDown(KeyCode.Space))
                 {
+                    strLogTrajExtra = trial.ToString() + deli + learnOrder[trial] + deli + testPhase;
                     timerSlider.value = (Time.time - inittime) / timelimit1;
-                    float cameraPitch = characterCamera.localEulerAngles.x;
-                    savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + "0" + "\n";
+                //    float cameraPitch = characterCamera.localEulerAngles.x;
+                //    savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + "0" + "\n";
                     yield return null;
                 }
                 float endtime = Time.time;
+                testPhase = 1;
+                strLogTrajExtra = trial.ToString() + deli + learnOrder[trial] + deli + testPhase;
+
                 // should I give feedback during the test phase? if I want to stop further learning then I shouldn't.
                 currentObj.SetActive(true);
 
-                float distPathNormal = -1;
+                float distError = -1;
+                
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    distPathNormal = Mathf.Sqrt(Mathf.Pow(curr_norm2D.x - currentObjLoc.x, 2) + Mathf.Pow(curr_norm2D.y - currentObjLoc.y, 2));
-                    //	distEucl=curr_norm2D.x-Vector2.Distance(character.position, currentObj.transform.position);
-                    string feedbacktext = "Error is " + (25 * distPathNormal).ToString("F1");
-                    feedbacktext = "";
+                    //distError = Mathf.Sqrt(Mathf.Pow(curr_norm2D.x - currentObjLoc.x, 2) + Mathf.Pow(curr_norm2D.y - currentObjLoc.y, 2)); //normalised path distance error on the surface
+                    distError = Vector3.Distance(character.position, currentObj.transform.position)/25;//3D Euclidean distance error, normalised to the length of short axis
+                    string feedbacktext = "Error is " + (25 * distError).ToString("F1");
+                    Debug.Log(feedbacktext);
                     translateAllow = false; rotateAllow = false;
-                    yield return FeedbackSmile(distPathNormal, feedbacktext);
+                    yield return FeedbackSmile(distError, feedbacktext);
                     translateAllow = true; rotateAllow = true;
-                    sumError = sumError + distPathNormal;
+                    sumError = sumError + distError;
 
                     lastlastError[learnOrder[trial]] = lastError[learnOrder[trial]];
-                    lastError[learnOrder[trial]] = distPathNormal;
+                    lastError[learnOrder[trial]] = distError;
 
                     nCompleteTrial++;
                 }
                 else
                 {
-                    string feedbacktext = "Timeout";
+                    string feedbacktext = "Timeout!";
                     translateAllow = false; rotateAllow = false;
                     yield return FeedbackSmile(100, feedbacktext);
+                    text_top.text="Check the location of the picture cube";
+                    yield return new WaitForSeconds(2);
                     translateAllow = true; rotateAllow = true;
 
                 }
-                savetextSum = trial + deli + inittime + deli + endtime + deli + MK2string(currentObjLoc) + deli + MK2string(curr_norm2D) + deli + distPathNormal.ToString("F3");
+                savetextSum = trial + deli + inittime + deli + endtime + deli + learnOrder[trial] + deli + MK2string(character.position) + deli + MK2string(character.eulerAngles)+deli+distError.ToString("F3");
 
                 StartCoroutine(save2file(savefnSum, savetextSum));
 
                 text_top.text = "Move to the " + objName_sub[learnOrder[trial]] + ", and try to remember it";
                 inittime = Time.time;
 
-                int didHitCheck = 1;
                 timelimit1 = 60f;// so one can relearn the locatin of objects
                 while (Time.time - inittime < timelimit1)
                 {
-                    placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
+                    strLogTrajExtra = trial.ToString() + deli + learnOrder[trial] + deli + testPhase;
+                 //   placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
                     timerSlider.value = (Time.time - inittime) / timelimit1;
-                    float cameraPitch = characterCamera.localEulerAngles.x;
 
-                    savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + didHitCheck + "\n";
-
-                    if (hitCheck())
+                    if (hitCheck("Respawn"))
                     {
                         text_top.text = "Press spacebar to continue";
-                        didHitCheck = 2;
+                        testPhase = 2;
                     }
-                    if (didHitCheck == 2 & Input.GetKeyDown(KeyCode.Space))
+                    if (testPhase == 2 & Input.GetKeyDown(KeyCode.Space))
                         break;
                     yield return null;
                 }
-                if (didHitCheck == 1)
-                {
-                    text_top.text = "<color=red>Next trial begins soon</color>";
-                    yield return new WaitForSeconds(2);
-                }
-                StartCoroutine(save2file(savefnTraj, savetextTraj));
+            //    if (testPhase == 1) // in case participants didn't grab the object within the timelimit1, warn participant that the next trial will begin soon
+            //    {
+            //        text_top.text = "<color=red>Next trial begins soon</color>";
+            //        yield return new WaitForSeconds(4);
+            //    }
 
+                CancelInvoke();
+                StartCoroutine(save2file(savefnTraj, strLogTraj));
+                
+                text_top.text = "Next trial will begin soon";
                 img_fullscreen.SetActive(true);
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(2f);
                 img_fullscreen.SetActive(false);
                 currentObj.SetActive(false);
 
@@ -1596,18 +1648,19 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         imgCenter.gameObject.SetActive(false);
 
     }
-    bool hitCheck()
+    bool hitCheck(string tagName)
     {
         RaycastHit hit;
-        Vector3 p1 = character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
-        Vector3 p2 = character.position + character.up * 1; //capsule cast top position 
-        Debug.DrawLine(p1, p1 + character.forward, Color.blue);
-        Debug.DrawLine(p2, p2 + character.forward, Color.blue);
+        Vector3 p1 = character.position + character.up *-1.0f; //capsule cast bottom position, depending on the hover distance between the character center and ground
+        Vector3 p2 = character.position + character.up * 1.0f; //capsule cast top position 
+        Debug.DrawLine(p1, p1 + character.forward*distCollide, Color.blue);
+        Debug.DrawLine(p2, p2 + character.forward*distCollide, Color.blue);
 
         bool didHit = false;
-        if (Physics.CapsuleCast(p1, p2, characterRadius, character.forward, out hit, distCollide))
+        testfloat=Vector3.Distance(character.position,prop3D.position);
+        if (Physics.CapsuleCast(p1, p2, 0.5f, character.forward, out hit, distCollide))
         {
-            if (hit.collider.tag == "Respawn")
+            if (hit.collider.tag == tagName)
                 didHit = true;
         }
         return didHit;
@@ -1629,11 +1682,13 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         text_top.text = "";
         img_fullscreen.SetActive(true); //put background image
-        tmptext = "<b>Object-location learing:</b>\nIn this task, you will find several picture cubes in the enviroment, one by one.";
-        tmptext = tmptext + "Try to remember the location of each picture as best as you can. Your spatial memory will be tested later.";
-        tmptext = tmptext + "\n\nAs before, the guide arrow on the ground will help you to find the picture cube when the cube is far away from you.";
+        tmptext = "<b>Object-location learing:</b>\nIn this task, you should find picture cubes on the green grass, one by one. Example picture cubes are shown below.";
+        tmptext = tmptext + "<b>Try to remember where each picture cube is located as best as you can.</b> Your spatial memory will be tested later.";
+        tmptext = tmptext + "\n(All picture cubes are located on the green grass, so you don't have to dive into the water :D)";
         tmptext = tmptext + "\n\nClick next to begin.";
-
+        
+        img_instructObjLearn.SetActive(true); //image of example pcture cubes
+        
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
         while (moveToNext == 0)
@@ -1644,6 +1699,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         nextButton.gameObject.SetActive(false);
         img_fullscreen.SetActive(false);
         text_fullscreen.text = "";
+        img_instructObjLearn.SetActive(false);
+
 
         // 1. Load object identity/location first
         for (int j = 1; j < objLoc.Length; j++)
@@ -1652,16 +1709,29 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             objList_sub[j].SetActive(false);
         }
 
-
         // encoding phase
         // place one object
         // wait subject to grab the object
         // give some seconds to encode the location
 
+        strLogTraj = "";//initialise log trajectory string for output file
+        strLogTrajExtra = "";//initialise extra information for the output trajectory file
+        InvokeRepeating("logTrajectory", 0f, 0.1f);//from now on, log character's position and rotation info for every 0.1sec
 
         for (trial = 1; trial < learnOrder.Length; trial++)
         {
+            strLogTrajExtra = trial.ToString() + deli + learnOrder[trial];//trial, location idx for current trial
             text_topright.text = trial + "/" + (learnOrder.Length - 1);
+
+            // temporarily hide the view because subject will be relocated
+            norm2DtoPhy2D(startLoc[trial], char2D);
+            norm2DtoPhy3D(startLoc[trial], character);
+            characterVerticalOffset();
+
+            img_fullscreen.SetActive(true);
+            yield return new WaitForSeconds(2f);
+            img_fullscreen.SetActive(false);
+            
 
             Vector3 currentObjLoc = objLoc[learnOrder[trial]];//normalised current object location (x,y,orientation)
             Vector2 currentObjLoc2D = new Vector2(currentObjLoc.x, currentObjLoc.y);
@@ -1669,19 +1739,15 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             currentObj.SetActive(true);
             text_top.text = "Find the picture box and touch it";
             float inittime = Time.time;
-            float timelimit1 = 60 * 1.5f;
-            string savetextTraj = "";
-
+            float timelimit1 = 60 * 3f;//3 min limit
+            
             int didHitCheck = 1;
             while (Time.time - inittime < timelimit1)
             {
-                placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
+             //   placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
                 timerSlider.value = (Time.time - inittime) / timelimit1;
-                float cameraPitch = characterCamera.localEulerAngles.x;
-
-                savetextTraj = savetextTraj + trial + deli + Time.time.ToString("F3") + deli + MK2string(curr_norm2D) + deli + cameraPitch.ToString("F1") + deli + didHitCheck + "\n";
-
-                if (hitCheck())
+             
+                if (hitCheck("Respawn"))
                 {
                     text_top.text = "Remember the location of the " + objName_sub[learnOrder[trial]] + ", then press the space bar";
                     didHitCheck = 2;
@@ -1695,17 +1761,13 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 text_top.text = "<color=red>Please move faster next time</color>";
                 yield return new WaitForSeconds(2);
             }
-
-            StartCoroutine(save2file(savefnTraj, savetextTraj));
-            // temporarily hide the view because subject will be relocated
-            norm2DtoPhy2D(startLoc[trial], char2D);
-            norm2DtoPhy3D(startLoc[trial], character);
-            img_fullscreen.SetActive(true);
-            yield return new WaitForSeconds(2f);
-            img_fullscreen.SetActive(false);
             currentObj.SetActive(false);
 
         }
+
+        CancelInvoke();
+        StartCoroutine(save2file(savefnTraj, strLogTraj));
+
         string tmpstring = "End of encoding phase, click Next to continue the experiment";
         img_fullscreen.SetActive(true);
         text_top.text = tmpstring;
@@ -1807,6 +1869,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         StartCoroutine(save2file(overviewFn, tmptext));
     }
     //////////// utility function //////////////////////////
+    public void logTrajectory(){
+        strLogTraj = strLogTraj+ Time.time.ToString("F3") + deli + MK2string(character.position) + deli +MK2string(character.eulerAngles)+ deli+strLogTrajExtra+ "\n";
+    }
     public void ClickedNext()
     {
         moveToNext = 1;

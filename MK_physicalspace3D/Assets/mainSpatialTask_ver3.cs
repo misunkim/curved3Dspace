@@ -170,7 +170,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 
 		distCollide=1f;
 
-		moveConstraint=3;//by default, I yoke the move on 2D flattenend and 3D (moveConstraint=1)
+		moveConstraint=1;//by default, I yoke the move on 2D flattenend and 3D (moveConstraint=1)
 
 		
 		curr_norm2D=phy2DtoNorm2D(char2D);
@@ -182,7 +182,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 
 		learnOrder=json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
 		startLoc=json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
-	//	yield return objectLocationTestPhase(learnOrder,startLoc,1);
+		yield return objectLocationTestPhase(learnOrder,startLoc,1);
 
 
         //	learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations

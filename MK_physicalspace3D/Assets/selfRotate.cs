@@ -11,7 +11,10 @@ public class selfRotate : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	  transform.Rotate(0, rotateSpeed*Time.deltaTime, 0);
-      
-	}
+        if(Input.GetKey(KeyCode.UpArrow))
+            transform.Rotate(-rotateSpeed*Time.deltaTime, 0,0);
+        if (Input.GetKey(KeyCode.DownArrow))
+            transform.Rotate(rotateSpeed * Time.deltaTime, 0, 0);
+
+    }
 }
