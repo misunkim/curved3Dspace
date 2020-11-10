@@ -89,6 +89,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     string distType;
 
     private string currentLocalTime, currentGMTime;
+    private int currentGMTimeInSec;
     public string overviewFn;// text file for summary of start/end of experiment
 
     private string strLogTraj, strLogTrajExtra;
@@ -666,6 +667,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             yield return null;
         }
         moveToNext = 0;//
+
         consentHolder.SetActive(false);
 
         yield return getTime();
@@ -675,6 +677,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         StartCoroutine(save2file(overviewFn, tmptext));
 
     }
+    
     IEnumerator demographicPhase()
     {
         demographHolder.SetActive(true);
@@ -717,7 +720,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         string tmptext = "<b>Introduction:</b>";
         tmptext = tmptext + "\nImagine that you are flying in the virtual world which has no gravity. You can freely rotate yourself in the air.";
         tmptext = tmptext + "\n\nI am investigating how people perceive such environment and how well they find their way within it. You will do a series of tasks in this virtual world.";
-        tmptext = tmptext + " <color=red>Instruction will be given at the top of the screen throughout the experiment. The experiment will take about 30~45 min in total. If you need to go to the restroom or check your phone, do it now.</color> Once you start the experiment, please focus on the experiment and complete it without distraction. ";
+        tmptext = tmptext + " <color=red>Instruction will be given at the top of the screen throughout the experiment. The experiment will take about 45 min in total. If you need to go to the restroom or check your phone, do it now.</color> Once you start the experiment, please focus on the experiment and complete it without distraction. ";
         tmptext = tmptext + " <color=blue>(The data will be difficult to analyse if you suddenly take a long break during the middle of the experiment!) </color>";
         tmptext = tmptext + "\n\nClick next to begin.";
         text_fullscreen.text = tmptext;
@@ -730,6 +733,20 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             yield return null;
         }
         moveToNext = 0;//
+         
+        yield return new WaitForSeconds(0.1f);
+
+        tmptext="<color=red>Important note:</color>";
+        tmptext=tmptext+"\n\n-Please close other web pages now. Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
+        tmptext=tmptext+"\n\n-If the movement in 3D environment is still laggy or if you see any error, warning message on the screen, send messages via Prolific. And leave the experiment webpage open.";
+        tmptext=tmptext+"\n\n-Do not refresh the web browser, this will abort the experiment and you have to start from the beginning.";
+        tmptext=tmptext+"\n\n-If you have any question regarding the experiment, leave message via Prolific.";
+        text_fullscreen.text=tmptext;
+        
+        while (moveToNext==0)
+        {   yield return null;}
+        moveToNext=0;
+
                        //	img_fullscreen.SetActive(false);
     }
     IEnumerator endOfExp()
@@ -765,6 +782,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         string savefn = subId + "_" + subSuffix + "_familiarisation_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
         StartCoroutine(save2file(overviewFn, tmptext));
 
+        
         Vector3[] pos2DList = json2vector3(taskparam["familiarise"]["path"]); // load Vector3 prop locations
         maxtrial = pos2DList.Length - 1;
         //	Vector3[] pos2DList=new Vector3[4];
@@ -801,9 +819,12 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         Debug.Log("start of propFollowingTask()");
         text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+        
+        yield return getTimeInSec();
+        int startGMT=currentGMTimeInSec;//store the starting time of the server at the beginninf of propFollowingTask to later check whether there is time substantial mistmatch between internal Unity Timing and Server time
         float inittime = Time.time;
         float timelimit = 5 * 60;// max 5 min
-
+        Debug.Log("start Unity time:"+inittime+", Server time:"+startGMT);
         // place the character in some starting position
         norm2DtoPhy3D(new Vector3(0.5f,0.5f,80),character);
         characterVerticalOffset();
@@ -837,20 +858,29 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         }
         CancelInvoke();//cancel the logTrajectory function
         StartCoroutine(save2file(savefn, strLogTraj));
-        // tell subjects that he completed the task and guide to the next task.. (how? full screen text? top text?)
-        prop2D.gameObject.SetActive(false);
-        prop3D.gameObject.SetActive(false);
-        text_top.text = "End of the movement practice phase. Click Next to continue the experiment";
-        Debug.Log("end of propFollowingTask()");
-        img_fullscreen.SetActive(true);
+        
+        yield return getTimeInSec();
+        int endGMT=currentGMTimeInSec;
+        Debug.Log("end Unity time:"+Time.time+", Server time:"+endGMT);
+        if (Mathf.Abs((endGMT-startGMT)-(Time.time-inittime))>30)
+        {   text_top.text="<color=red>Crticial timing error! Message the researcher and then return the job</color>";
+            img_fullscreen.SetActive(true);
 
-        nextButton.gameObject.SetActive(true);
-        while (moveToNext == 0)
-        {
-            yield return null;
         }
-        moveToNext = 0;//
+        else{// tell subjects that he completed the task and guide to the next task.. (how? full screen text? top text?)
+            prop2D.gameObject.SetActive(false);
+            prop3D.gameObject.SetActive(false);
+            text_top.text = "End of the movement practice phase. Click Next to continue the experiment";
+            Debug.Log("end of propFollowingTask()");
+            img_fullscreen.SetActive(true);
 
+            nextButton.gameObject.SetActive(true);
+            while (moveToNext == 0)
+            {
+                yield return null;
+            }
+            moveToNext = 0;//
+        }
     }
     IEnumerator triangleCompletionTask()
     {
@@ -1024,15 +1054,22 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         //2) turning subject towards the target object
         //3) increase the arrow to reach the object
         //4) repeat this process
-        Vector3[] startLoc = new Vector3[4];
-        startLoc[1] = new Vector3(-0.1f, 0.1f, 90f);
-        startLoc[2] = startLoc[1];
+
+        Vector3[] startLoc=new Vector3[7];
+		startLoc[1]=new Vector3(-0.1f,0.1f,90f);
+		startLoc[2]=startLoc[1];
         startLoc[3] = startLoc[1];
-        
-        Vector3[] targetLoc = new Vector3[4];
-        targetLoc[1] = new Vector3(0.9f, 0.9f, 90f);
-        targetLoc[2] = new Vector3(0.9f, 0.1f, 0f);
-        targetLoc[3] = new Vector3(-0.9f, 0.1f, 0f);
+        startLoc[4] = startLoc[1];
+        startLoc[5] = startLoc[1];
+        startLoc[6] = startLoc[1];
+
+        Vector3[] targetLoc=new Vector3[7];
+		targetLoc[1]=new Vector3(0.9f,0.9f,90f);
+		targetLoc[2]=new Vector3(0.9f,0.1f,0f);
+        targetLoc[3] = new Vector3(0.6f, 0.5f, 0f);
+        targetLoc[4] = new Vector3(0.3f, 0.8f, 0f);
+        targetLoc[5] = new Vector3(-0.2f, 0.3f, 0f);
+        targetLoc[6] = new Vector3(-0.9f, 0.1f, 0f);
 
         trial = 1;
         Vector3 start3Dpos = norm2DtoPhy3D(startLoc[trial], character); //first place hte subject in the starting position
@@ -1323,7 +1360,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 tmptext = "DistType should be either 'Path' or 'Euclid'. Something is wrong! contact researcher";
         }
         tmptext = tmptext + "\nYou should click and move the slider from 'very close'(e.g. zero distance) to 'very far' (e.g. pair of pictures that can be farthest away in the environment). ";
-        tmptext = tmptext + "\n<b>Please try to esimate the distance as precisely as you can. </b>And try to use the whole range of the slider. (example shown below)";
+        tmptext = tmptext + "\n<b>Please try to estimate the distance as precisely as you can. </b>And try to use the whole range of the slider. (example shown below)";
         tmptext = tmptext + "\n\nClick next to begin.";
 
         text_fullscreen.text = tmptext;
@@ -1999,6 +2036,22 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             Debug.Log("Received date and time from php");
         }
         currentGMTime = www.text;
+    }
+    IEnumerator getTimeInSec()
+    {
+        Debug.Log("connecting to php");
+        string url = "http://vm-mkim-1.cbs.mpg.de/getdatetimeInSec.php";
+        WWW www = new WWW(url);
+        yield return www;
+        if (www.error != null)
+        {
+            Debug.Log("Error in retrieving date and time");
+        }
+        else
+        {
+            Debug.Log("Received date and time from php");
+        }
+        currentGMTimeInSec = int.Parse(www.text);
     }
 
 }

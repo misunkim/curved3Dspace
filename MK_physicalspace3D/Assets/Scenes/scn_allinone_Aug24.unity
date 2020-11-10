@@ -3459,7 +3459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &438561737
 Transform:
   m_ObjectHideFlags: 0
@@ -13732,6 +13732,7 @@ MonoBehaviour:
   text_topleft: {fileID: 806582948}
   text_topright: {fileID: 615859422}
   text_warning: {fileID: 609029839}
+  consentFullscreenText: {fileID: 474989085}
   img_fullscreen: {fileID: 913566748}
   img_instructObjLearn: {fileID: 1692054242}
   img_instructFamil: {fileID: 431613571}
