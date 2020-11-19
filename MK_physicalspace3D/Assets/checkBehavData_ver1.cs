@@ -7,16 +7,24 @@ using UnityEngine.UI;
 using SimpleJSON;
 
 public class checkBehavData_ver1 : MonoBehaviour {
-    private JSONNode taskparam;
+    private JSONNode taskparam, behDataAll;
     public Transform character;
     public Vector3[] posList, eulerList;
+    public Vector3[] objlocSum;
+    public int objId;
+    int[] phaseList, objIdList;
+    public Vector3 dropLoc;
+    public string taskType;
+    public string subId;
     public int trial;
+
     public int[] publicIntList;
     public Text text_top;
-    public Transform pictureCube;
+    public Transform pictureCube, markerCube, trafficCone;
     private Vector3[] objLoc;
     public float time_step = 0.05f;
     public int moveConstraint=3;
+    public Vector3[] familConePos;
     // Use this for initialization
     IEnumerator Start () {
         Debug.Log("start of checkBehavData_ver1.cs");
@@ -25,6 +33,13 @@ public class checkBehavData_ver1 : MonoBehaviour {
 
         taskparam = JSON.Parse(the_JSON_string);
         objLoc=json2vector3(taskparam["objLoc"]);
+        familConePos=json2vector3(taskparam["familiarise"]["path"]);
+        
+        
+        jsonTextAsset=Resources.Load<TextAsset>("behResult/behResult_ver09");
+        the_JSON_string=jsonTextAsset.text;
+        behDataAll=JSON.Parse(the_JSON_string);
+
         yield return null;
     }
 
@@ -32,6 +47,7 @@ public class checkBehavData_ver1 : MonoBehaviour {
     void Update () {
         if (Input.GetKeyDown(KeyCode.Return))
         {   Debug.Log("Return pressed in checkBehavData_ver1.cs"); 
+            loadDataFromJson();//first load the trajectory data
             StopCoroutine(replayTraj());
             StartCoroutine(replayTraj());
             Debug.Log("hi misun"); 
@@ -82,8 +98,42 @@ public class checkBehavData_ver1 : MonoBehaviour {
         for (var i = 0; i < tmpnode.Count; i++) newarray[i] = tmpnode[i];
         return newarray;
     }
-    IEnumerator replayTraj()
-    {   Debug.Log("replayTraj(), trial="+trial);
+    int[] json2int(JSONNode tmpnode)
+    {
+        int[] newarray = new int[tmpnode.Count];
+        for (var i = 0; i < tmpnode.Count; i++) newarray[i] = tmpnode[i];
+        return newarray;
+    }
+    void loadDataFromJson(){
+        string fieldname="t"+trial;
+        if (taskType=="test"){
+            posList=json2vector3(behDataAll[subId]["test"][fieldname]["trajPos3D"]);
+            eulerList=json2vector3(behDataAll[subId]["test"][fieldname]["trajEuler"]);
+            phaseList=json2int(behDataAll[subId]["test"][fieldname]["trajPhase"]);
+            objId=behDataAll[subId]["test"][fieldname]["objlocId"];
+            Vector3 dropEuler=behDataAll[subId]["test"][fieldname]["dropEuler"];
+            float disterror=behDataAll[subId]["test"][fieldname]["disterror"];
+            objlocSum=json2vector3(behDataAll[subId]["test"]["alltrial"]);
+            
+            Debug.Log("loadDataFromJson() trial="+trial);
+            Debug.Log("disterror="+disterror);
+            Debug.Log("objlocId="+objId);
+        }
+        if (taskType=="learn"){
+            posList=json2vector3(behDataAll[subId]["learn"][fieldname]["trajPos3D"]);
+            eulerList=json2vector3(behDataAll[subId]["learn"][fieldname]["trajEuler"]);
+            objId=trial;
+            phaseList=new int[eulerList.Length];
+            for (int i=0;i<phaseList.Length;i++) phaseList[i]=1;   
+        }
+        if (taskType=="famil"){
+            posList=json2vector3(behDataAll[subId]["famil"]["trajPos3D"]);
+            eulerList=json2vector3(behDataAll[subId]["famil"]["trajEuler"]);
+            phaseList=json2int(behDataAll[subId]["famil"]["trajPhase"]);
+            
+        }
+    }
+    void loadDataFromTxt(){
         //var maintestlist = Resources.Load<TextAsset>("msub10_ull_familiarisation_20201027_171052");
         //var maintestlist=Resources.Load<TextAsset>("msub28_ull_familiarisation_20201029_114502");
         //var maintestlist=Resources.Load<TextAsset>("msub14_ull_ObjLoc_TestRun1Traj_20201030_175945");
@@ -94,9 +144,10 @@ public class checkBehavData_ver1 : MonoBehaviour {
         // while interp?
         // traj_x, traj_y, traj_z[t]
         int n=0;//how many rows are there for each trial?
+        string[] mpt=new string[1];
         for (int j = 1; j < tmp.Length - 1; j++)
         {
-            var mpt = tmp[j].Split("\t"[0]);
+            mpt = tmp[j].Split("\t"[0]);
             try{
                 if (int.Parse(mpt[7])==trial)
                 {   trialIdx[n]=j;
@@ -109,40 +160,50 @@ public class checkBehavData_ver1 : MonoBehaviour {
         publicIntList=trialIdx;
         posList = new Vector3[n];
         eulerList = new Vector3[n];
-        int[] phaseList=new int[n];
-        int[] objIdList=new int[n];
+        phaseList=new int[n];
         for (int j = 0; j < posList.Length; j++)
         {
-            var mpt = tmp[trialIdx[j]].Split("\t"[0]);
+            mpt = tmp[trialIdx[j]].Split("\t"[0]);
             posList[j] = new Vector3(float.Parse(mpt[1]), float.Parse(mpt[2]), float.Parse(mpt[3]));
             eulerList[j] = new Vector3(float.Parse(mpt[4]), float.Parse(mpt[5]), float.Parse(mpt[6]));
             phaseList[j] = int.Parse(mpt[9]);
-            objIdList[j]=int.Parse(mpt[8]);
+        }
+        objId=int.Parse(mpt[8]);
+        for (int j=1;j<posList.Length;j++){
+            if (phaseList[j-1]==0 & phaseList[j]==1)
+                dropLoc=posList[j];
+
         }
         
-
-        Debug.Log("posList[0]" + posList[0].ToString("F1"));
-        Debug.Log("posList[1]" + posList[1].ToString("F1"));
-        Debug.Log("posList[end-1]" + posList[posList.Length - 2].ToString("F1"));
-        Debug.Log("posList[end]" + posList[posList.Length-1].ToString("F1"));
+    }
+    IEnumerator replayTraj()
+    {   Debug.Log("replayTraj(), trial="+trial);
+        
         Vector3 curPos;
         Quaternion curQuat;
 
-        pictureCube.position=norm2DtoPhy3D(objLoc[objIdList[0]],pictureCube);
-        pictureCube.gameObject.SetActive(false);
+        if (taskType=="learn" | taskType=="test")
+        {   pictureCube.position=norm2DtoPhy3D(objLoc[objId],pictureCube);
+            pictureCube.gameObject.SetActive(false);
+        }
+        markerCube.position=dropLoc;
+        
         for (int i = 0; i < posList.Length-1; i++) {
             float time_init = Time.time;
             
             Quaternion preQuat = Quaternion.Euler(eulerList[i].x, eulerList[i].y, eulerList[i].z);
             Quaternion postQuat = Quaternion.Euler(eulerList[i+1].x, eulerList[i+1].y, eulerList[i+1].z);
-            //text_top.text="phase "+phaseList[i];
+            text_top.text="phase "+phaseList[i];
             if (phaseList[i]>0){
-                pictureCube.gameObject.SetActive(true);
+                if (taskType=="learn" | taskType=="test")
+                    pictureCube.gameObject.SetActive(true);//true location of the objects
+                if (taskType=="famil")
+                    norm2DtoPhy3D(familConePos[phaseList[i]],trafficCone);
             }
 
             while (Time.time-time_init <= time_step)
             {
-                hitCheck("Respawn");
+            //    hitCheck("Respawn");
 
                 curPos = Vector3.Lerp(posList[i], posList[i + 1], (Time.time - time_init) / time_step);
                 curQuat = Quaternion.Slerp(preQuat, postQuat, (Time.time - time_init) / time_step);
@@ -154,6 +215,7 @@ public class checkBehavData_ver1 : MonoBehaviour {
 
         //    yield return null;
         }
+        text_top.text="replay end";
         yield return  null;
     }
    bool hitCheck(string tagName)

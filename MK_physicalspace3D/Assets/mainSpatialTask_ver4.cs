@@ -93,7 +93,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     public string overviewFn;// text file for summary of start/end of experiment
 
     private string strLogTraj, strLogTrajExtra;
-
+    private System.DateTime time_system1;
+    float timee1unity;
     IEnumerator Start()
     {
 
@@ -148,7 +149,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         string the_JSON_string = "";
 
 #if UNITY_WEBGL
-        UnityWebRequest www = UnityWebRequest.Get(Application.dataPath + "/" + subId + "_inputParam_1001.json");
+        UnityWebRequest www = UnityWebRequest.Get(Application.dataPath + "/" + subId + "_inputParam_1119.json");
         yield return www.SendWebRequest();
         if (www.isNetworkError || www.isHttpError)
             Debug.Log(www.error);
@@ -156,16 +157,16 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         {
             Debug.Log(www.downloadHandler.text);
             the_JSON_string = www.downloadHandler.text;
-            Debug.Log("load Web/" + subId + "_inputParam_0917");
+            Debug.Log("load Web/" + subId + "_inputParam_1119");
         }
 #endif
 
         if (the_JSON_string == "") //if I fail to load the json task param from the server, find it from Resources directory
         {
-            TextAsset jsonTextAsset = Resources.Load<TextAsset>(subId + "_inputParam_1001");
+            TextAsset jsonTextAsset = Resources.Load<TextAsset>(subId + "_inputParam_1119");
             if (jsonTextAsset != null)
             {
-                Debug.Log("load Resources/" + subId + "_inputParams_0917");
+                Debug.Log("load Resources/" + subId + "_inputParams_1119");
                 the_JSON_string = jsonTextAsset.text;
             }
             else
@@ -425,10 +426,6 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha0))
                 Debug.Log(GetScreenInfo());
         }
-       
-            
-
-
         /*		if (Input.GetKeyDown(KeyCode.Alpha1)) //this should be removed
                     EnvironmentToggle(1,1);
                 if (Input.GetKeyDown(KeyCode.Alpha2))
@@ -737,10 +734,10 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
 
         tmptext="<color=red>Important note:</color>";
-        tmptext=tmptext+"\n\n-Please close other web pages now. Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
+        tmptext=tmptext+"\n\n-<color=red>Please close all other web pages now.</color> Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
         tmptext=tmptext+"\n\n-If the movement in 3D environment is still laggy or if you see any error, warning message on the screen, send messages via Prolific. And leave the experiment webpage open.";
         tmptext=tmptext+"\n\n-Do not refresh the web browser, this will abort the experiment and you have to start from the beginning.";
-        tmptext=tmptext+"\n\n-If you have any question regarding the experiment, leave message via Prolific.";
+        tmptext=tmptext+"\n\n-If you have any question regarding the experiment, leave message immediately via Prolific. Prolific message board is monitored real time";
         text_fullscreen.text=tmptext;
         
         while (moveToNext==0)
@@ -820,11 +817,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         Debug.Log("start of propFollowingTask()");
         text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
         
-        yield return getTimeInSec();
-        int startGMT=currentGMTimeInSec;//store the starting time of the server at the beginninf of propFollowingTask to later check whether there is time substantial mistmatch between internal Unity Timing and Server time
         float inittime = Time.time;
         float timelimit = 5 * 60;// max 5 min
-        Debug.Log("start Unity time:"+inittime+", Server time:"+startGMT);
         // place the character in some starting position
         norm2DtoPhy3D(new Vector3(0.5f,0.5f,80),character);
         characterVerticalOffset();
@@ -834,6 +828,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         strLogTraj = "";//initialise log trajectory string for output file
         strLogTrajExtra = "";//initialise extra information for the output trajectory file
+        time_system1=System.DateTime.Now;
         InvokeRepeating("logTrajectory", 0f, 0.1f);//from now on, log character's position and rotation info for every 0.1sec
         while (Time.time - inittime < timelimit & trial < pos2DList.Length)
         {
@@ -859,28 +854,26 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         CancelInvoke();//cancel the logTrajectory function
         StartCoroutine(save2file(savefn, strLogTraj));
         
-        yield return getTimeInSec();
-        int endGMT=currentGMTimeInSec;
-        Debug.Log("end Unity time:"+Time.time+", Server time:"+endGMT);
-        if (Mathf.Abs((endGMT-startGMT)-(Time.time-inittime))>30)
-        {   text_top.text="<color=red>Crticial timing error! Message the researcher and then return the job</color>";
-            img_fullscreen.SetActive(true);
-
-        }
-        else{// tell subjects that he completed the task and guide to the next task.. (how? full screen text? top text?)
+        // tell subjects that he completed the task and guide to the next task.. (how? full screen text? top text?)
             prop2D.gameObject.SetActive(false);
             prop3D.gameObject.SetActive(false);
-            text_top.text = "End of the movement practice phase. Click Next to continue the experiment";
+            text_top.text = "End of the movement practice phase.";
             Debug.Log("end of propFollowingTask()");
             img_fullscreen.SetActive(true);
 
+            tmptext="I hope you enjoyed flying in this virtual world.\n\nThe movement practice task should have been less than 5 minutes. If it took longer than that, or you felt that the movement was slow and laggy,";
+            tmptext=tmptext+"it is very likely that you have an unstable internet connection or some technical issue at the server, stop the experiment now and message the experimenter at Prolific. I will compensate your time.";
+            tmptext=tmptext+"\n\nOtherwise, click Next and continue the experiment.";
+            text_fullscreen.text=tmptext;
+            
             nextButton.gameObject.SetActive(true);
             while (moveToNext == 0)
             {
                 yield return null;
             }
+            text_fullscreen.text="";
             moveToNext = 0;//
-        }
+        
     }
     IEnumerator triangleCompletionTask()
     {
@@ -1475,6 +1468,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         lastError = new float[] { 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f, 10f };
 
         int testPhase = 0;// 0 retrieval phase, subjects is moving toward the remembered location of the object; 1, feedback phase, subject is moving to touch the object; 2, confirmation phase, subject already reach the object but have not pressed the spacebar yet to start the next trial 
+        time_system1=System.DateTime.Now;
+        
         for (trial = 1; trial < learnOrder.Length; trial++)
         {
             // in case of adaptive testing paradigm, I will skip the trial if subject has already remembered that object well
@@ -1720,7 +1715,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         text_top.text = "";
         img_fullscreen.SetActive(true); //put background image
         tmptext = "<b>Object-location learing:</b>\nIn this task, you should find picture cubes on the green grass, one by one. Example picture cubes are shown below.";
-        tmptext = tmptext + "<b>Try to remember where each picture cube is located as best as you can.</b> Your spatial memory will be tested later.";
+        tmptext = tmptext + "<b>Try to remember where each picture cube is located as best as you can.</b> You will be asked to find each picture cube later in the experiment.";
         tmptext = tmptext + "\n(All picture cubes are located on the green grass, so you don't have to dive into the water :D)";
         tmptext = tmptext + "\n\nClick next to begin.";
         
@@ -1753,6 +1748,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         strLogTraj = "";//initialise log trajectory string for output file
         strLogTrajExtra = "";//initialise extra information for the output trajectory file
+        time_system1=System.DateTime.Now;
+        
         InvokeRepeating("logTrajectory", 0f, 0.1f);//from now on, log character's position and rotation info for every 0.1sec
 
         for (trial = 1; trial < learnOrder.Length; trial++)
@@ -1907,7 +1904,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     }
     //////////// utility function //////////////////////////
     public void logTrajectory(){
-        strLogTraj = strLogTraj+ Time.time.ToString("F3") + deli + MK2string(character.position) + deli +MK2string(character.eulerAngles)+ deli+strLogTrajExtra+ "\n";
+        var time_systemNow=System.DateTime.Now;
+        double time_elapsed=(time_systemNow-time_system1).TotalSeconds;
+        strLogTraj = strLogTraj+ Time.time.ToString("F3") + deli + MK2string(character.position) + deli +MK2string(character.eulerAngles)+ deli+strLogTrajExtra+ deli+Time.deltaTime.ToString("F3")+ deli+time_elapsed.ToString("F3")+ "\n";
     }
     public void ClickedNext()
     {

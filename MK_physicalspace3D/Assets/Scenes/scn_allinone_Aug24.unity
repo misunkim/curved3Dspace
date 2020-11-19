@@ -8803,13 +8803,13 @@ GameObject:
   - component: {fileID: 1077814191}
   - component: {fileID: 1077814190}
   - component: {fileID: 1077814189}
-  m_Layer: 10
-  m_Name: Cube
+  m_Layer: 0
+  m_Name: markerCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &1077814189
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8829,7 +8829,7 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1077814188}
   m_Enabled: 1
-  m_CastShadows: 3
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1
@@ -8837,7 +8837,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 954dd99ccb760d14d9c84911450ed787, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8871,8 +8871,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1077814188}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.6, y: 2.8, z: -15.9}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -12.6, y: -4.02, z: -37.09}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 30
@@ -13705,12 +13705,20 @@ MonoBehaviour:
   character: {fileID: 1525890408}
   posList: []
   eulerList: []
-  trial: 23
+  objlocSum: []
+  objId: 0
+  dropLoc: {x: 0, y: 0, z: 0}
+  taskType: learn
+  subId: sub1
+  trial: 1
   publicIntList: 
   text_top: {fileID: 1682964286}
   pictureCube: {fileID: 264677610}
-  time_step: 0.1
+  markerCube: {fileID: 1077814192}
+  trafficCone: {fileID: 366023774}
+  time_step: 0.05
   moveConstraint: 3
+  familConePos: []
 --- !u!114 &1718474168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13732,7 +13740,6 @@ MonoBehaviour:
   text_topleft: {fileID: 806582948}
   text_topright: {fileID: 615859422}
   text_warning: {fileID: 609029839}
-  consentFullscreenText: {fileID: 474989085}
   img_fullscreen: {fileID: 913566748}
   img_instructObjLearn: {fileID: 1692054242}
   img_instructFamil: {fileID: 431613571}
