@@ -35,7 +35,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
     public GameObject debriefHolder, consentHolder, buttonProlific, demographHolder;
     public GameObject[] debriefQ, debriefQ2;//debrief dropdown questions(debrieefQ) and debrief text inputfield questions(debriefQ2)
-    public Dropdown dropdownSex;
+    public Dropdown dropdownSex, dropdownBrowser;
     public Text inputAge;
 
     public Slider timerSlider;
@@ -63,7 +63,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     public string subId;
     // Use this for initialization
     public Vector3 curr_norm2D;// this is the normalised coordinate and direction of the character
-    public int trial, maxtrial;
+    public int trial, maxtrial, startTrial;
     // Environment related parameters (ideally this should be also placed somewhere else..)
     public int envType = 1; //critical, whether the environment is slope or cylinder
     public float sqDim = 25;
@@ -97,8 +97,6 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     float timee1unity;
     IEnumerator Start()
     {
-
-        //int subNum=1;
         int subNum = Random.Range(1, 50);
     //    subNum = 14;
         subId = "msub" + subNum.ToString("D2");
@@ -117,6 +115,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         Debug.Log("tmp2=" + tmp2 + "_" + tmp2.Substring(1, 2));
         string PID = "null";
         string fullURL = "";
+        startTrial=10;
+        string tmpstartTrial="";
+        string expSeq="FromBeginning";//FromBeginning, FromObjLocTest,FromDistInstruct,From2AFC, FromSlider
 #if UNITY_WEBGL && !UNITY_EDITOR
 		// extract Prolific ID from URL
 		var parameters=URLParameters.GetSearchParameters();
@@ -128,10 +129,29 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 		else
 		{	Debug.Log("can't find PID=null");
 			text_warning.gameObject.SetActive(true);
-			text_warning.text="Fatal error! can't proceed to experiment. Contact the experimenter Dr.Misun Kim (mkim@cbs.mpg.de)";	
+			text_warning.text="Fatal error! can't proceed to experiment. Contact the experimenter via Prolific message or email (mkim@cbs.mpg.de)";	
 			PID="null";
 			yield return new WaitForSeconds(300);
 		}
+        if (parameters.TryGetValue("msub", out subId)){
+            Debug.Log("manual subID entered="+subId);
+        }else{
+            subId="msub"+subNum.ToString("D2");
+            Debug.Log("randomly assign subId="+subId);
+        }
+
+        if (parameters.TryGetValue("expSeq", out expSeq)){
+            Debug.Log("expSeq="+expSeq);
+        }else{
+            expSeq="FromBeginning";
+            Debug.Log("expSeq="+expSeq);
+        }
+        if (parameters.TryGetValue("startTrial", out tmpstartTrial)){
+            startTrial=int.Parse(tmpstartTrial);
+            Debug.Log("startTrial="+startTrial);
+        }else{
+            startTrial=1;
+        }
 #endif
         subSuffix = PID.Substring(1, 3);
         string tmptext = fullURL + "\n" + PID;
@@ -140,7 +160,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         tmptext = tmptext + "\n" + Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of exp";
         StartCoroutine(save2file(overviewFn, tmptext));
 
-        yield return consentPhase();
+//        yield return consentPhase();
 
 
         text_warning.gameObject.SetActive(false);
@@ -172,7 +192,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             else
             {
                 text_warning.gameObject.SetActive(true);
-                text_warning.text = "Fatal error! can't proceed to experiment. Contact the experimenter Dr.Misun Kim (mkim@cbs.mpg.de)";
+                text_warning.text = "Fatal error! can't proceed to experiment. Contact the experimenter via Prolific message or email (mkim@cbs.mpg.de)";
                 Debug.Log("fail to load the input csv file");
 
             }
@@ -191,35 +211,70 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         curr_norm2D = phy2DtoNorm2D(char2D);
         yield return initialiseObjList();
 
-     	yield return startOfExp();	
-        yield return propFollowingTask();
-        yield return objectLocationLearnPhase();
+        yield return experimentSequence(expSeq);
 
-        learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
-        startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
-        yield return objectLocationTestPhase(learnOrder,startLoc,1);
+        //	yield return triangleCompletionTask();
+    }
 
+    IEnumerator experimentSequence(string expSeq){
+        if (expSeq=="FromBeginning"){
+            yield return consentPhase();
 
-       // learnOrder=json2int(taskparam["objlocTestRun2"]["learnOrder"]); // load Vector3 prop locations
-       // startLoc=json2vector3(taskparam["objlocTestRun2"]["startLoc"]); // load Vector3 prop locations
-       // yield return objectLocationTestPhase(learnOrder,startLoc,2);
+            startTrial=1;
+            yield return startOfExp();	
+            yield return propFollowingTask();
+            yield return objectLocationLearnPhase();
 
-        if (distType == "Euclid")
-        {
+            learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
+            startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
+            yield return objectLocationTestPhase(learnOrder,startLoc,1);
+
+            if (distType == "Euclid")
+            {
+                yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
+                yield return objectDistEstimate_2AFC();
+                yield return objectDistEstimate_pairwise();
+            }
+            if (distType == "Path")
+            {
+                //    yield return objectDistEstimate_egocentric();
+                yield return objectDistEstimate_2AFC();
+                yield return objectDistEstimate_pairwise();
+            }
+            yield return debriefPhase();
+            yield return endOfExp();
+        }
+        if (expSeq=="FromObjLocTest"){
+            learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
+            startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
+            yield return objectLocationTestPhase(learnOrder,startLoc,1);
+            startTrial=1;
             yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
             yield return objectDistEstimate_2AFC();
             yield return objectDistEstimate_pairwise();
+            yield return debriefPhase();
+            yield return endOfExp();
         }
-        if (distType == "Path")
-        {
-            //    yield return objectDistEstimate_egocentric();
+        if (expSeq=="FromDistInstruct"){
+            yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
+            startTrial=1;
             yield return objectDistEstimate_2AFC();
             yield return objectDistEstimate_pairwise();
+            yield return debriefPhase();
+            yield return endOfExp();
         }
-        yield return debriefPhase();
-        yield return endOfExp();
-
-        //	yield return triangleCompletionTask();
+        if (expSeq=="From2AFC"){
+            yield return objectDistEstimate_2AFC();
+            startTrial=1;
+            yield return objectDistEstimate_pairwise();
+            yield return debriefPhase();
+            yield return endOfExp();
+        }
+        if (expSeq=="FromSlider"){
+            yield return objectDistEstimate_pairwise();
+            yield return debriefPhase();
+            yield return endOfExp();
+        }
     }
 
     IEnumerator initialiseObjList()
@@ -413,13 +468,10 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                 }
             }
         }
-        if (Input.GetKey(KeyCode.F1))
+        if (Input.GetKey(KeyCode.Alpha4)&Input.GetKey(KeyCode.Alpha5)&Input.GetKey(KeyCode.Alpha6))
         {
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                trial = maxtrial;
-                text_top.text = "jump to the last trial";
-            }//set the trial number to the max trial so that I can jump on to the next task
+            trial = maxtrial;
+            text_top.text = "jump to the last trial";//set the trial number to the max trial so that I can jump on to the next task
         }
         if (Input.GetKey(KeyCode.Alpha9))
         {
@@ -669,10 +721,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         yield return getTime();
         string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of consentPhase";
-
-        yield return demographicPhase();
         StartCoroutine(save2file(overviewFn, tmptext));
 
+        yield return demographicPhase();
+
+    
     }
     
     IEnumerator demographicPhase()
@@ -680,13 +733,13 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         demographHolder.SetActive(true);
         Debug.Log("start:demographicPhase()");
         int custombreakCondition = 0;
-
+        string browser="";
         while (custombreakCondition == 0)
         {
             if (moveToNext == 1)
             {
                 moveToNext = 0; // reset the move To Next button
-                if (inputAge.text != "" & dropdownSex.value != 0)
+                if (inputAge.text != "" & dropdownSex.value != 0 & dropdownBrowser.value!=0)
                 {
                     int tmpsex = dropdownSex.value;
                     int tmpage = int.Parse(inputAge.text);
@@ -696,6 +749,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
                         custombreakCondition = 1;
                         sex = tmpsex;
                         age = tmpage;
+                        browser=dropdownBrowser.options[dropdownBrowser.value].text;
                     }
                     else
                     {
@@ -707,6 +761,10 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             yield return null;
         }
         demographHolder.SetActive(false); //remove the demographic component
+    
+        yield return getTime();
+        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of demograph"+",sex:"+sex+",age="+age+",browser:"+browser;
+        StartCoroutine(save2file(overviewFn, tmptext));
     }
     IEnumerator startOfExp()
     {
@@ -737,7 +795,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         tmptext=tmptext+"\n\n-<color=red>Please close all other web pages now.</color> Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
         tmptext=tmptext+"\n\n-If the movement in 3D environment is still laggy or if you see any error, warning message on the screen, send messages via Prolific. And leave the experiment webpage open.";
         tmptext=tmptext+"\n\n-Do not refresh the web browser, this will abort the experiment and you have to start from the beginning.";
-        tmptext=tmptext+"\n\n-If you have any question regarding the experiment, leave message immediately via Prolific. Prolific message board is monitored real time";
+        tmptext=tmptext+"\n\n-<color=red>If you have any questions or encounter problem, leave the message immediately via Prolific.</color> Prolific message board is monitored real time.";
         text_fullscreen.text=tmptext;
         
         while (moveToNext==0)
@@ -1072,6 +1130,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         
         moveConstraint = 0;
         float timeinit;
+
+        maxtrial=startLoc.Length-1;
         for (trial = 1; trial < startLoc.Length; trial++)
         {
             text_top.text = "Imagine that you measure a straight-line distance from here to a traffic cone";
@@ -1168,8 +1228,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         //distEstOrder[2]=new Vector3(6,7,5);
         Vector3[] distEstOrder = json2vector3(taskparam["distEst2AFC"]["triplet"]);
         maxtrial = distEstOrder.Length - 1;
-
-        for (trial = 1; trial < distEstOrder.Length; trial++)
+        
+        for (trial = startTrial; trial < distEstOrder.Length; trial++)
         {
             text_top.text = "Which one is closer? Press 1 or 2";
             text_topright.text = trial + "/" + (distEstOrder.Length - 1);
@@ -1371,7 +1431,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         distEstimateHolder.SetActive(true);
         Vector2[] distEstOrder = json2vector2(taskparam["distEstPair"]["pairList"]);
         maxtrial = distEstOrder.Length - 1;
-        for (trial = 1; trial < distEstOrder.Length; trial++)
+        for (trial = startTrial; trial < distEstOrder.Length; trial++)
         {
             text_top.text = "How far are these two items? Adjust the slider (click) and press the spacebar";
             text_topright.text = trial + "/" + (distEstOrder.Length - 1);
@@ -1470,7 +1530,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         int testPhase = 0;// 0 retrieval phase, subjects is moving toward the remembered location of the object; 1, feedback phase, subject is moving to touch the object; 2, confirmation phase, subject already reach the object but have not pressed the spacebar yet to start the next trial 
         time_system1=System.DateTime.Now;
         
-        for (trial = 1; trial < learnOrder.Length; trial++)
+        for (trial = startTrial; trial < learnOrder.Length; trial++)
         {
             // in case of adaptive testing paradigm, I will skip the trial if subject has already remembered that object well
             Debug.Log("trial=" + trial);
