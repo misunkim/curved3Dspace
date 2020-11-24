@@ -19,9 +19,19 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using UnityEditor;
 // git commit test 2020/08/17 16:36
 public class mainSpatialTask_ver4 : MonoBehaviour
 {
+    [DllImport("__Internal")]
+    private static extern uint GetTotalMemorySize();
+    [DllImport("__Internal")]
+    private static extern uint GetTotalStackSize();
+    [DllImport("__Internal")]
+    private static extern uint GetStaticMemorySize();
+    [DllImport("__Internal")]
+    private static extern uint GetDynamicMemorySize();
+
     public int rotDir = 1;
     [DllImport("__Internal")]
     private static extern double GetDPI();
@@ -90,14 +100,14 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
     private string currentLocalTime, currentGMTime;
     private int currentGMTimeInSec;
-    public string overviewFn;// text file for summary of start/end of experiment
+    public string overviewFn, fnMemorySum;// text file for summary of start/end of experiment
 
     private string strLogTraj, strLogTrajExtra;
     private System.DateTime time_system1;
     float timee1unity;
     IEnumerator Start()
     {
-        int subNum = Random.Range(1, 50);
+            int subNum = Random.Range(1, 50);
     //    subNum = 14;
         subId = "msub" + subNum.ToString("D2");
         //subSuffix=Random.Range(100,999);//at the beginning of each experiment, random 3digit number is assigned, it should help me to distinguish each participant (in addition to their offiical subId)
@@ -121,6 +131,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 #if UNITY_WEBGL && !UNITY_EDITOR
 		// extract Prolific ID from URL
 		var parameters=URLParameters.GetSearchParameters();
+        
 		fullURL=URLParameters.Href;
 		Debug.Log("full URL="+fullURL);
 		if (parameters.TryGetValue("PID", out PID)){
@@ -154,9 +165,10 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         }
 #endif
         subSuffix = PID.Substring(1, 3);
-        string tmptext = fullURL + "\n" + PID;
+        string tmptext = fullURL + "\n" + PID+"\n"+GetAllMemoryInfo();
         yield return getTime();
         overviewFn = subId + "_" + subSuffix + "_overview_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        fnMemorySum=subId + "_" + subSuffix + "_memoryOverview.txt";
         tmptext = tmptext + "\n" + Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of exp";
         StartCoroutine(save2file(overviewFn, tmptext));
 
@@ -478,28 +490,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha0))
                 Debug.Log(GetScreenInfo());
         }
-        /*		if (Input.GetKeyDown(KeyCode.Alpha1)) //this should be removed
-                    EnvironmentToggle(1,1);
-                if (Input.GetKeyDown(KeyCode.Alpha2))
-                    EnvironmentToggle(1,0);
-                if (Input.GetKeyDown(KeyCode.Alpha3))
-                    EnvironmentToggle(0,1);
-                if (Input.GetKeyDown(KeyCode.Alpha4))
-                    EnvironmentToggle(0,0);
-
-                if (Input.GetKeyDown(KeyCode.Alpha2))
-                {	RenderSettings.fog=true;
-                }
-                if (Input.GetKeyDown(KeyCode.Alpha1))
-                {	RenderSettings.fog=false;
-                }
-        */
-        /*		if (Input.GetKeyDown(KeyCode.Return)){
-                    string tmpstr="rand "+Random.Range(0,100);
-                    Debug.Log(tmpstr);
-                    StartCoroutine(save2file("save0717.txt", tmpstr));
-                }
-        */
+        if (Input.GetKey(KeyCode.Alpha7)&Input.GetKeyDown(KeyCode.Alpha8)){
+            Debug.Log(GetAllMemoryInfo());
+        }
     }
     void characterVerticalOffset(){
         character.Translate(new Vector3(0,1,0),Space.Self);// shift the camera location 1 unit above the surface
@@ -793,9 +786,8 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         tmptext="<color=red>Important note:</color>";
         tmptext=tmptext+"\n\n-<color=red>Please close all other web pages now.</color> Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
-        tmptext=tmptext+"\n\n-If the movement in 3D environment is still laggy or if you see any error, warning message on the screen, send messages via Prolific. And leave the experiment webpage open.";
-        tmptext=tmptext+"\n\n-Do not refresh the web browser, this will abort the experiment and you have to start from the beginning.";
-        tmptext=tmptext+"\n\n-<color=red>If you have any questions or encounter problem, leave the message immediately via Prolific.</color> Prolific message board is monitored real time.";
+        tmptext=tmptext+"\n\n-Do not refresh, go back, or close the web browser, this will abort the experiment and you have to start from the beginning!";
+        tmptext=tmptext+"\n\n-I hope the experiment runs smoothly in your browser, but <color=red>if you encounter any technical problem (e.g. button suddenly stops working, movement is laggy), don't worry. Just quickly send a message via Prolific.</color> Prolific message board is monitored real time and I will try to help you as soon as possible.";
         text_fullscreen.text=tmptext;
         
         while (moveToNext==0)
@@ -806,10 +798,6 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     }
     IEnumerator endOfExp()
     {
-        yield return getTime();
-        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of EndOfExp";
-        StartCoroutine(save2file(overviewFn, tmptext));
-
         nextButton.gameObject.SetActive(false);
         img_fullscreen.SetActive(true);
         text_top.text = "The end";
@@ -924,6 +912,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             tmptext=tmptext+"\n\nOtherwise, click Next and continue the experiment.";
             text_fullscreen.text=tmptext;
             
+            yield return getTime();
+            tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of propFollowingTask"+deli+GetDynamicMemoryInfo();
+            StartCoroutine(save2file(overviewFn, tmptext));
+
+
             nextButton.gameObject.SetActive(true);
             while (moveToNext == 0)
             {
@@ -1077,13 +1070,17 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     IEnumerator instructionEuclideanDist()
     {
         Debug.Log("start instructionEuclideanDist");
+        
+        yield return getTime();
+        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of instructEuclidDist"+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(overviewFn, tmptext));
 
         prop3D.gameObject.SetActive(true);
 
         text_topleft.text = "";
         text_top.text = "Instruction";
         img_fullscreen.SetActive(true); //put background image
-        string tmptext = "In the next part of the experiment, you will be asked to estimate the <b>distances between the picture cubes</b> you learned earlier.";
+        tmptext = "In the next part of the experiment, you will be asked to estimate the <b>distances between the picture cubes</b> you learned earlier.";
         tmptext = tmptext + "\nFor instance, you will report whether " + objName_sub[5] + " and " + objName_sub[1] + " are very close or very far away,";
         tmptext = tmptext + " or decide whether the " + objName_sub[5] + " is closer to the " + objName_sub[1] + " or " + objName_sub[3] + ".";
         tmptext = tmptext + "\n\nWhen you estimate the distance between the objects, you should imagine a <b>straight line</b> between the objects.";
@@ -1168,6 +1165,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             selfArrowHolder.gameObject.SetActive(false);
         }
         yield return null;
+
+        yield return getTime();
+        tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of instructEuclidDist"+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(overviewFn, tmptext));
+
         img_fullscreen.SetActive(true); //put background image
         tmptext = "If the meaning of the distance along a straight line is clear, please click next and continue the experiment.";
         tmptext = tmptext + "\nOtherwise, please contact the researcher.";
@@ -1188,10 +1190,12 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     {
 
         yield return getTime();
-        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of objDistEst_2AFC";
+        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of objDistEst_2AFC"+deli+GetDynamicMemoryInfo();
         string savefnSum = subId + "_" + subSuffix + "_DistEst2AFC_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
         StartCoroutine(save2file(overviewFn, tmptext));
 
+        string textMemory="2AFC task started"+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(fnMemorySum,textMemory));
         text_top.text = "";
         text_topright.text = "";text_topleft.text="";
         img_fullscreen.SetActive(true); //put background image
@@ -1257,6 +1261,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             string savetextSum = "";
             savetextSum = trial + deli + inittime + deli + item1 + deli + item2 + deli + item3 + deli + response + deli + RT;
             StartCoroutine(save2file(savefnSum, savetextSum));
+
+            textMemory=trial+deli+Time.time.ToString("F2")+deli+GetDynamicMemoryInfo();
+            StartCoroutine(save2file(fnMemorySum,textMemory));
 
             distEst2AFCImg1.sprite = null;
             distEst2AFCImg2.sprite = null;
@@ -1388,10 +1395,13 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     {
 
         yield return getTime();
-        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of objDistEst_pairwise";
+        string tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of objDistEst_pairwise"+deli+GetDynamicMemoryInfo();
         string savefnSum = subId + "_" + subSuffix + "_DistEst1_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
         StartCoroutine(save2file(overviewFn, tmptext));
-
+        
+        string textMemory="slider task started"+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(fnMemorySum,textMemory));
+        
         translateAllow = false; rotateAllow = false;
         text_top.text = ""; text_topright.text = "";text_topleft.text="";
         timerSlider.gameObject.SetActive(false);
@@ -1450,6 +1460,9 @@ public class mainSpatialTask_ver4 : MonoBehaviour
             string savetextSum = "";
             savetextSum = trial + deli + item1 + deli + item2 + deli + distEstSlider.value + deli + RT + deli + inittime;
             StartCoroutine(save2file(savefnSum, savetextSum));
+
+            textMemory=trial+deli+Time.time.ToString("F2")+deli+GetDynamicMemoryInfo();
+            StartCoroutine(save2file(fnMemorySum,textMemory));
 
             distEstCue1.sprite = null;
             distEstCue2.sprite = null;
@@ -1698,6 +1711,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         }
         text_top.text = tmpstring;
+        yield return getTime();
+        tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of objLocTest" + deli + "point:+" + pointAccum+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(overviewFn, tmptext));
+
+
         nextButton.gameObject.SetActive(true);
         while (moveToNext == 0)
         {
@@ -1706,9 +1724,6 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         moveToNext = 0;//
         imgCenter.gameObject.SetActive(false);
 
-        yield return getTime();
-        tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of objLocTest" + deli + "point:+" + pointAccum;
-        StartCoroutine(save2file(overviewFn, tmptext));
 
     }
     IEnumerator FeedbackSmile(float distError, string feedbackText)
@@ -1862,6 +1877,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         CancelInvoke();
         StartCoroutine(save2file(savefnTraj, strLogTraj));
 
+
+        yield return getTime();
+        tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of objLocLearn"+deli+GetDynamicMemoryInfo();
+        StartCoroutine(save2file(overviewFn, tmptext));
+        
         string tmpstring = "End of encoding phase, click Next to continue the experiment";
         img_fullscreen.SetActive(true);
         text_top.text = tmpstring;
@@ -1872,9 +1892,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         }
         moveToNext = 0;
 
-        yield return getTime();
-        tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of objLocLearn";
-        StartCoroutine(save2file(overviewFn, tmptext));
+
         // retrieval phase
     }
     IEnumerator debriefPhase()
@@ -1960,6 +1978,7 @@ public class mainSpatialTask_ver4 : MonoBehaviour
 
         yield return getTime();
         tmptext = Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "end of debrief";
+        tmptext= tmptext+"\n"+GetAllMemoryInfo();
         StartCoroutine(save2file(overviewFn, tmptext));
     }
     //////////// utility function //////////////////////////
@@ -2066,7 +2085,31 @@ public class mainSpatialTask_ver4 : MonoBehaviour
         for (var i = 0; i < tmpnode.Count; i++) newarray[i] = tmpnode[i];
         return newarray;
     }
-
+    string GetAllMemoryInfo(){
+        Debug.Log("GetAllMemoryInfo() called");
+        string memoryInfo="";
+#if UNITY_WEBGL && !UNITY_EDITOR   
+        memoryInfo="total="+GetTotalMemorySize().ToString();
+        memoryInfo=memoryInfo+",stack="+GetTotalStackSize().ToString();
+        memoryInfo=memoryInfo+",static="+GetStaticMemorySize().ToString();
+        memoryInfo=memoryInfo+",dynamic="+GetDynamicMemorySize().ToString();
+#else
+        memoryInfo="all=0bytes";
+        Debug.Log("GetMemoryInfo() can be only retrieved in WebGL");
+#endif
+        return memoryInfo;
+    }
+    string GetDynamicMemoryInfo(){
+        string memoryInfo="";
+		Debug.Log("GetDynamicMemoryInfo() called");
+#if UNITY_WEBGL && !UNITY_EDITOR
+        memoryInfo=GetDynamicMemorySize().ToString()+"bytes";
+#else
+        memoryInfo="0bytes";
+        Debug.Log("dynamic Memory info can be only retrieved in WebGL");
+#endif
+        return memoryInfo;    
+    }
     string GetScreenInfo()
     {
         float dpi = 0;
