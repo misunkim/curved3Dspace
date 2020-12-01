@@ -7017,7 +7017,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 92583460}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 107.482, y: 2.281, z: -37.2}
+  m_LocalPosition: {x: 131.4, y: 2.281, z: -63}
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_Children:
   - {fileID: 964898305}
@@ -8336,7 +8336,7 @@ MonoBehaviour:
   distEstCue2: {fileID: 357234751}
   cueList:
   - {fileID: 0}
-  - {fileID: 21300000, guid: 4217a7bb4ca7d4e3295757162861f872, type: 3}
+  - {fileID: 0}
   - {fileID: 21300000, guid: e641c6d3954d2465e9b6bf52422484e4, type: 3}
   - {fileID: 21300000, guid: 5d2c1d48a6d22401a9b40312b28c6c2b, type: 3}
   - {fileID: 21300000, guid: 13e4ca15d67974426aa58a85645e4626, type: 3}

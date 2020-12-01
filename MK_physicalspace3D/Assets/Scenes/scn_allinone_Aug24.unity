@@ -14458,7 +14458,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1718474162}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 410d80a9beb0c4f8d9bd74d2fec5e368, type: 3}
   m_Name: 
@@ -14486,7 +14486,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1718474162}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0499462df8473455e9b3d52d8cfb2570, type: 3}
   m_Name: 
@@ -14580,6 +14580,7 @@ MonoBehaviour:
   curr_norm2D: {x: 0, y: 0, z: 0}
   trial: 0
   maxtrial: 0
+  startTrial: 0
   envType: 2
   sqDim: 25
   testfloat: 0
@@ -14623,6 +14624,7 @@ MonoBehaviour:
   curve_openWalls: {fileID: 0}
   curve_closedWalls: {fileID: 0}
   overviewFn: 
+  fnMemorySum: 
 --- !u!1 &1725804623
 GameObject:
   m_ObjectHideFlags: 0
