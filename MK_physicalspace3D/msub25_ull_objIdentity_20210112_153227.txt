@@ -1,0 +1,10 @@
+sex1,age31,isOpenEnv1,distTypeEuclid
+
+1	0.000	0.950	314.000	koala
+2	0.900	0.950	210.000	strawberry
+3	0.900	0.050	101.000	cat
+4	0.700	0.750	67.000	duck
+5	0.000	0.050	148.000	kiwi
+6	-0.900	0.050	43.000	penguin
+7	-0.900	0.950	247.000	banana
+8	-0.700	0.250	158.000	elephant

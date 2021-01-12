@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 2092b8b19dc4941a99379075c7033124
 SketchUpImporter:
-  generateBackFace: 0
+  generateBackFace: 1
   mergeCoplanarFaces: 0
   selectedNodes: 0000000001000000
   assetHash:

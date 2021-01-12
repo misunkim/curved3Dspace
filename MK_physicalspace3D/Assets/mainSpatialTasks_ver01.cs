@@ -116,7 +116,7 @@ public class mainSpatialTasks_ver01 : MonoBehaviour {
 			Instantiate(prop.gameObject, tmppos3D,Quaternion.identity);
 		}
 
-	
+		yield return null;
 	
    	//	yield return propFollowingTask();
 	//	yield return objectLocationLearnPhase();

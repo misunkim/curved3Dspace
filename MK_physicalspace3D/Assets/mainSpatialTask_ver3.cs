@@ -29,7 +29,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 	// GUI elements
 	public Button nextButton;
 	public Text text_top, text_fullscreen, text_topleft, text_topright, text_warning;
-	public GameObject img_fullscreen;
+	public GameObject img_fullscreen,img_instructObjLearn, img_instructFamil, img_instruct2AFC, img_instructSlider;
 
 	public GameObject debriefHolder, consentHolder,buttonProlific, demographHolder;
 	public GameObject[] debriefQ, debriefQ2;//debrief dropdown questions(debrieefQ) and debrief text inputfield questions(debriefQ2)
@@ -170,8 +170,13 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
 
 		distCollide=1f;
 
-		moveConstraint=1;//by default, I yoke the move on 2D flattenend and 3D (moveConstraint=1)
+		moveConstraint=4;//by default, I yoke the move on 2D flattenend and 3D (moveConstraint=1)
+        if (moveConstraint == 1 | moveConstraint==4)
+            characterCamera.localPosition = new Vector3(0,4,0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
+        if (moveConstraint == 3)
+            characterCamera.localPosition = new Vector3(0, 0, 0); //when flying, it is more natural when eye and center of mass are aligned
 
+    
 		
 		curr_norm2D=phy2DtoNorm2D(char2D);
 		yield return initialiseObjList();
@@ -385,6 +390,48 @@ public class mainSpatialTask_ver3 : MonoBehaviour {
                     character.Translate(-Vector3.forward * translateSpeed * Time.deltaTime);
             }
         }
+		if (moveConstraint ==4)// driving with pitch rotation{
+		{	if (rotateAllow){
+				char2D.Rotate(0, Input.GetAxis("Horizontal") * rotateSpeed*Time.deltaTime, 0);
+				float tmpPitch=characterCamera.localEulerAngles.x;
+				
+				if (Input.GetKey(KeyCode.UpArrow)){
+					tmpPitch=tmpPitch-rotateSpeed*0.6f*Time.deltaTime;
+				//	characterCamera.Rotate(-0.2f*rotateSpeed*Time.deltaTime,0,0,Space.Self);
+				}
+				if (Input.GetKey(KeyCode.DownArrow)){
+					tmpPitch=tmpPitch+rotateSpeed*0.6f*Time.deltaTime;
+				//	characterCamera.Rotate(0.2f*rotateSpeed*Time.deltaTime,0,0,Space.Self);
+				
+				}
+				tmpPitch=tmpPitch%360;
+				if (tmpPitch>70&tmpPitch<=180)
+					tmpPitch=70;
+				if (tmpPitch>180&tmpPitch<290)
+					tmpPitch=290;
+				characterCamera.localEulerAngles=new Vector3(tmpPitch,0,0);	
+				
+			}
+
+			
+			Vector3 old_2Dpos=char2D.position;
+			if (translateAllow){
+				if (Input.GetKey(KeyCode.W))
+				{	char2D.Translate(Vector3.forward*translateSpeed*Time.deltaTime);
+				}
+				if (Input.GetKey(KeyCode.S))
+				{	char2D.Translate(-Vector3.forward*translateSpeed*Time.deltaTime);
+				}
+			}
+			curr_norm2D=phy2DtoNorm2D(char2D);//extract the normalised 2D coordinates and direction from arrow on 2D
+			if(curr_norm2D.x<-0.98f | curr_norm2D.x>0.98f | curr_norm2D.y<0.02f | curr_norm2D.y>0.98f) // if the movement makes subject outside the range of arena, move back to where they were
+			{	char2D.position=old_2Dpos;
+				curr_norm2D=phy2DtoNorm2D(char2D);
+			}
+			
+			norm2DtoPhy3D(curr_norm2D,character);// place character on 3D location using the normalised 2D coordinate and facing direction 
+		
+		}
 
         if (Input.GetKey(KeyCode.F1))
 		{	if(Input.GetKeyDown(KeyCode.F2))
@@ -722,24 +769,38 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		text_top.text="";
 		img_fullscreen.SetActive(true); //put background image
 		tmptext="<b>Familiarisation:</b>";
-		tmptext=tmptext+"\nLet's first practice how to move around in this virtual world. You can simply move forward/backward by pressing the up/down arrow keys, and you can steer your vehicle right/left by pressing the right/left arrow keys.";
-		tmptext=tmptext+"\n\nIn this task, you should find and move to a traffic cone. Once you reach the cone, the cone will disappear and reappear somewhere else. Then move to the cone again";
-		tmptext=tmptext+" This task will last for a few minutes.";
-		tmptext=tmptext+"\n<b>Tip:</b> An arrow on the ground will guide you to the traffic cone. This guide arrow is visible only when you are far away from the cone. (When you are close enough to the cone, you won't need a guide)";
+		if (moveConstraint!=4)
+		{
+			tmptext=tmptext+"\nLet's first practice how to move around in this virtual world. You can simply move forward/backward by pressing the up/down arrow keys, and you can steer your vehicle right/left by pressing the right/left arrow keys.";
+			tmptext=tmptext+"\n\nIn this task, you should find and move to a traffic cone. Once you reach the cone, the cone will disappear and reappear somewhere else. Then move to the cone again";
+			tmptext=tmptext+" This task will last for a few minutes.";
+			tmptext=tmptext+"\n<b>Tip:</b> An arrow on the ground will guide you to the traffic cone. This guide arrow is visible only when you are far away from the cone. (When you are close enough to the cone, you won't need a guide)";
+		}
+		if (moveConstraint==4)
+		{
+			tmptext=tmptext+"\nLet's first practice how to move around in this virtual world. You can simply move forward/backward by pressing W/S key and you can rotate right/left by pressing the arrow key. You can also look up and down by pressing up/down arrow key.";
+			tmptext = tmptext + "\n\nIn this task, you should find and move to a traffic cone on the grass (example below). Once you reach the traffic cone, the cone will disappear and reappear somewhere else. Then, move to the cone again. You will repeat this for a few minutes.";
+     
+		}
 		tmptext=tmptext+"\n\nClick next to begin.";
-
+		img_instructFamil.SetActive(true);
+     
 		text_fullscreen.text=tmptext;
 		nextButton.gameObject.SetActive(true);
 		while (moveToNext==0)
 		{    yield return null;
-		}moveToNext=0;//
+		}
+		img_instructFamil.SetActive(false);
+       
+		moveToNext=0;//
 		nextButton.gameObject.SetActive(false);
 		img_fullscreen.SetActive(false);
 		text_fullscreen.text="";
 		timerSlider.gameObject.SetActive(true);
 
 		Debug.Log("start of propFollowingTask()");
-		text_top.text="Find the cone and move to it (arrow keys)";
+		text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+  
 		float inittime=Time.time;
 		float timelimit=5*60;// max 6min
 		
@@ -752,7 +813,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 			timerSlider.value=(Time.time-inittime)/timelimit;
 			norm2DtoPhy2D(pos2DList[trial],prop2D); // place the prop (e.g. traffic cone) to predefined location
 			norm2DtoPhy3D(pos2DList[trial],prop3D); // place the prop (e.g. traffic cone) to predefined location
-			placeGuideArrow(curr_norm2D, pos2DList[trial]);
+			if (moveConstraint!=4)
+				placeGuideArrow(curr_norm2D, pos2DList[trial]);
 			RaycastHit hit;
 			Vector3 p1=character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
 			Vector3 p2=character.position+character.up*1; //capsule cast top position 
@@ -1427,8 +1489,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
                 int didHitCheck = 1;
                 timelimit1 = 60f;// so one can relearn the locatin of objects
                 while (Time.time - inittime < timelimit1)
-                {
-                    placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
+                {	if (moveConstraint!=4)
+                    	placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
                     timerSlider.value = (Time.time - inittime) / timelimit1;
                     float cameraPitch = characterCamera.localEulerAngles.x;
 
@@ -1587,7 +1649,8 @@ IEnumerator simulRot(Vector3 start, Vector3 target){
 		
 			int didHitCheck=1;
 			while (Time.time-inittime<timelimit1)
-			{	placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
+			{	if (moveConstraint!=4)
+					placeGuideArrow(curr_norm2D, objLoc[learnOrder[trial]]);
 				timerSlider.value=(Time.time-inittime)/timelimit1;
 				float cameraPitch=characterCamera.localEulerAngles.x;
 				

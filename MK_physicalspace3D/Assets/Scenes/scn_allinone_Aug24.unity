@@ -14321,7 +14321,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1718474162}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4c4a3736945cc4d80a2ed005c43aea50, type: 3}
   m_Name: 
@@ -14336,6 +14336,10 @@ MonoBehaviour:
   text_topright: {fileID: 615859422}
   text_warning: {fileID: 609029839}
   img_fullscreen: {fileID: 913566748}
+  img_instructObjLearn: {fileID: 1692054242}
+  img_instructFamil: {fileID: 431613571}
+  img_instruct2AFC: {fileID: 1776752871}
+  img_instructSlider: {fileID: 731209333}
   debriefHolder: {fileID: 1088842837}
   consentHolder: {fileID: 491525371}
   buttonProlific: {fileID: 342820420}
@@ -14458,7 +14462,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1718474162}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 410d80a9beb0c4f8d9bd74d2fec5e368, type: 3}
   m_Name: 
