@@ -1,5 +1,0 @@
-
-null
-22		20210112_152338	start of exp
-98		20210112_152455	end of consentPhase
-167		20210112_152604	start of propFollowingTask

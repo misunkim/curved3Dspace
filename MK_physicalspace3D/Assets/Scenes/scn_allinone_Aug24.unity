@@ -1276,7 +1276,7 @@ MeshRenderer:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 92583460}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -12179,6 +12179,9 @@ MonoBehaviour:
     - m_Text: I had the map of 3D curved environment in my mind and measured the distance
         on that map (bird's-eye view 3D)
       m_Image: {fileID: 0}
+    - m_Text: I had the surface map of the environment, rather 2D, and measured the
+        distance on that map (bird's-eye view 2D)
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -14353,6 +14356,7 @@ MonoBehaviour:
   - {fileID: 481099234}
   - {fileID: 1555976996}
   dropdownSex: {fileID: 1941978487}
+  dropdownBrowser: {fileID: 340755605}
   inputAge: {fileID: 927490496}
   timerSlider: {fileID: 288915093}
   distEstimateHolder: {fileID: 287080449}
@@ -14413,6 +14417,7 @@ MonoBehaviour:
   curr_norm2D: {x: 0, y: 0, z: 0}
   trial: 0
   maxtrial: 0
+  startTrial: 0
   envType: 2
   sqDim: 25
   testfloat: 0
@@ -14456,6 +14461,7 @@ MonoBehaviour:
   curve_openWalls: {fileID: 642558661}
   curve_closedWalls: {fileID: 446547907}
   overviewFn: 
+  fnMemorySum: 
 --- !u!114 &1718474167
 MonoBehaviour:
   m_ObjectHideFlags: 0
