@@ -229,11 +229,11 @@ public class mainSpatialTask_ver4 : MonoBehaviour
     {
         if (expSeq == "FromBeginning")
         {
-            yield return consentPhase();
+//            yield return consentPhase();
 
             startTrial = 1;
-            yield return startOfExp();
-            yield return propFollowingTask();
+//            yield return startOfExp();
+//            yield return propFollowingTask();
             yield return objectLocationLearnPhase();
 
             learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations

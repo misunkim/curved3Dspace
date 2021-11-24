@@ -14,7 +14,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/scn_July17.unity
     guid: 9a2a41cdb840c4b7a8231796741914c8
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/scn_allinone_Aug24.unity
     guid: 40d657afd52dd4373b87234fcdf6af87
+  - enabled: 1
+    path: Assets/scn_demoWithoutSavingData.unity
+    guid: 952efb42b003b44e9a8935a64dd0178e
   m_configObjects: {}
