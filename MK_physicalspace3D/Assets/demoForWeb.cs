@@ -10,9 +10,11 @@ public class demoForWeb : MonoBehaviour {
 
 	float rotateSpeed,translateSpeed, characterRadius,distCollide;
 	public Vector3 curr_norm2D;
-	public GameObject mainMenuUI;
+	public GameObject mainMenuUI,surfConcave,surfConvex;
+
 	public Text text_top;
 	public int trial;
+     float convexity=1; // 0, concave; 1, convex
 	// Use this for initialization
 	void Start () {
 		rotateSpeed=90;
@@ -143,6 +145,16 @@ public class demoForWeb : MonoBehaviour {
             norm2DtoPhy3D(curr_norm2D, character);// place character on 3D location using the normalised 2D coordinate and facing direction 
 
         }
+        if (Input.GetKeyDown(KeyCode.Alpha9)){
+            // switch to convex env
+            surfConvex.SetActive(true); surfConcave.SetActive(false);
+            convexity=1;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha0)){
+            // switch to concave env
+            surfConvex.SetActive(false); surfConcave.SetActive(true);
+            convexity=0;
+        }
 
 
     }
@@ -263,12 +275,23 @@ public class demoForWeb : MonoBehaviour {
 		}
 		if (normPos2D.x >= 0)
 		{
-			tmpx = Mathf.Sin(normPos2D.x * Mathf.PI * 3 / 2) * Radius + 0f; //
+		
+       
+        if (convexity==0) //concave
+        {	tmpx = Mathf.Sin(normPos2D.x * Mathf.PI * 3 / 2) * Radius + 0f; //
 			tmpy = -Mathf.Cos(normPos2D.x * Mathf.PI * 3 / 2) * Radius + Radius;
 			tmpz = normPos2D.y * sqDim - 55f;
 
 			baseNormal = new Vector3(0, 0, (normPos2D.x * Mathf.PI * 3 / 2) * Mathf.Rad2Deg);
-		}
+        }
+        if (convexity==1) //convex
+        {	tmpx = Mathf.Sin(normPos2D.x * Mathf.PI * 3 / 2) * Radius + 0f; //
+			tmpy = Mathf.Cos(normPos2D.x * Mathf.PI * 3 / 2) * Radius - Radius;
+			tmpz = normPos2D.y * sqDim - 55f;
+
+			baseNormal = new Vector3(0, 0, -(normPos2D.x * Mathf.PI * 3 / 2) * Mathf.Rad2Deg);
+        }
+        }
 
         Vector3 outPos3D = new Vector3(tmpx, tmpy, tmpz);
 
