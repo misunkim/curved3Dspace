@@ -232,7 +232,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
     {
         if (expSeq == "FromBeginning")
         {
-        //    yield return consentPhase();
+            yield return consentPhase();
 
             startTrial = 1;
             yield return startOfExp();
@@ -316,7 +316,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
         }
 
         string savefn = subId + "_" + subSuffix + "_objIdentity_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
-        string demostr = "sex" + sex + ",age" + age + ",isOpenEnv" + isOpenEnv + ",distType" + distType;
+        string demostr = "sex" + sex + ",age" + age + ",isOpenEnv" + isOpenEnv + ",distType" + distType+",convexity"+convexity;
 
         StartCoroutine(save2file(savefn, demostr + "\n" + strObjName));
 
@@ -822,7 +822,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
         tmptext = "<color=red>Important note:</color>";
         tmptext = tmptext + "\n\n-<color=red>Please close all other web pages now.</color> Rendering of 3D virtual environment requires large memory, and the experiment might freeze or become laggy if there are many web pages open in your computer now.";
         tmptext = tmptext + "\n\n-Do not refresh, go back, or close the web browser, this will abort the experiment and you might have to start from the beginning!";
-        tmptext = tmptext + "\n\n-I hope the experiment runs smoothly in your browser, but <color=red>if you encounter any technical problem (e.g. button suddenly stops working, movement is laggy), don't panic. Just quickly send a message via Prolific.</color> Prolific message board is monitored real time and I will help you as soon as possible.";
+        tmptext = tmptext + "\n\n-I hope the experiment runs smoothly in your browser, but <color=red>if you encounter any technical problem (e.g. button suddenly stops working, movement is laggy), don't panic. Just quickly send a message via Prolific.</color> Prolific message board is closely monitored and I will help you as soon as possible.";
         text_fullscreen.text = tmptext;
 
         while (moveToNext == 0)
@@ -888,7 +888,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
         if (moveConstraint == 4)
         {
             tmptext = tmptext + "\nLet's first practice how to move around in this virtual world. You can simply move forward/backward by pressing W/S key and you can rotate right/left by pressing the arrow key. You can also look up and down by pressing up/down arrow key.";
-            tmptext = tmptext + "\n\nIn this task, you should find and move to a traffic cone on the grass (example below). Once you reach the traffic cone, the cone will disappear and reappear somewhere else. Then, move to the cone again. You will repeat this for a few minutes.";
+            tmptext = tmptext + "\n\nIn this task, you should find and move to a traffic cone on the grass. Once you reach the traffic cone, the cone will disappear and reappear somewhere else. Then, move to the cone again. You will repeat this for a few minutes.";
 
         }
         tmptext = tmptext + "\n\nClick next to begin.";
@@ -913,7 +913,10 @@ public class mainSpatialTask_ver5 : MonoBehaviour
         timerSlider.gameObject.SetActive(true);
 
         Debug.Log("start of propFollowingTask()");
-        text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+        if (moveConstraint==4)
+            text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+        if (moveConstraint==1)
+            text_top.text = "Find the traffic cone and move to it (rotation: left/right, move: up/down)";
 
         float inittime = Time.time;
         float timelimit = 5 * 60;// max 5min
@@ -1822,7 +1825,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
 
         text_top.text = "";
         img_fullscreen.SetActive(true); //put background image
-        tmptext = "<b>Object-location learing:</b>\nIn this task, you should find picture cubes on the green grass, one by one. Example picture cubes are shown below.";
+        tmptext = "<b>Object-location learing:</b>\nIn this task, you should find picture cubes on the green grass, one by one.";
         tmptext = tmptext + "<b>Try to remember where each picture cube is located as best as you can.</b> You will be asked to find each picture cube later in the experiment.";
         if (moveConstraint != 4)
             tmptext = tmptext + "\n\nAs before, the guide arrow on the ground will help you to find the picture cube when the cube is far away from you.";
