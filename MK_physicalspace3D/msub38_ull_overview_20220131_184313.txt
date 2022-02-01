@@ -1,7 +1,0 @@
-
-null
-all=0bytes
-0	20220131_174313	20220131_184313	start of exp
-9	20220131_174329	20220131_184329	end of demograph,sex:1,age=32,browser:Firefox
-3	20220131_174320	20220131_184320	end of consentPhase
-30	20220131_174358	20220131_184358	start of propFollowingTask

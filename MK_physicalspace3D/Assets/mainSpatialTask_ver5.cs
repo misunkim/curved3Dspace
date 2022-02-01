@@ -214,7 +214,7 @@ public class mainSpatialTask_ver5 : MonoBehaviour
 
         distCollide = 1f;
 
-        moveConstraint = 4;// 1, driving; 3, flying; 4, driving with looking updown
+        moveConstraint = 1;// 1, driving; 3, flying; 4, driving with looking updown
         if (moveConstraint == 1 | moveConstraint == 4)
             characterCamera.localPosition = new Vector3(0, 4, 0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
         if (moveConstraint == 3)
@@ -232,33 +232,33 @@ public class mainSpatialTask_ver5 : MonoBehaviour
     {
         if (expSeq == "FromBeginning")
         {
-            yield return consentPhase();
+        //    yield return consentPhase();
 
             startTrial = 1;
             yield return startOfExp();
-        yield return propFollowingTask();
-        yield return objectLocationLearnPhase();
+            yield return propFollowingTask();
+            yield return objectLocationLearnPhase();
 
-        learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
-        startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
-        yield return objectLocationTestPhase(learnOrder, startLoc, 1);
+            learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
+            startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
+            yield return objectLocationTestPhase(learnOrder, startLoc, 1);
 
-        if (distType == "Euclid")
-        {
-            yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
-            yield return objectDistEstimate_2AFC();
-            yield return objectDistEstimate_pairwise();
+            if (distType == "Euclid")
+            {
+                yield return instructionEuclideanDist(); //for Euclidean dist estimatino task, present some instruction, and skip the egocentric dist estimation task because driving in Euclidean way doesn't make sense
+                yield return objectDistEstimate_2AFC();
+                yield return objectDistEstimate_pairwise();
+            }
+            if (distType == "Path")
+            {
+                //    yield return objectDistEstimate_egocentric();
+                yield return objectDistEstimate_2AFC();
+                yield return objectDistEstimate_pairwise();
+            }
+            yield return debriefPhase();
+            yield return endOfExp();
         }
-        if (distType == "Path")
-        {
-            //    yield return objectDistEstimate_egocentric();
-            yield return objectDistEstimate_2AFC();
-            yield return objectDistEstimate_pairwise();
-        }
-        yield return debriefPhase();
-        yield return endOfExp();
-   }
-           if (expSeq == "FromObjLocTest")
+        if (expSeq == "FromObjLocTest")
         {
             learnOrder = json2int(taskparam["objlocTestRun1"]["learnOrder"]); // load Vector3 prop locations
             startLoc = json2vector3(taskparam["objlocTestRun1"]["startLoc"]); // load Vector3 prop locations
@@ -892,7 +892,12 @@ public class mainSpatialTask_ver5 : MonoBehaviour
 
         }
         tmptext = tmptext + "\n\nClick next to begin.";
-        
+              
+        for (int j = 1; j < objLoc.Length; j++)
+        {   norm2DtoPhy3D(objLoc[j], objList_sub[j].transform);
+            objList_sub[j].SetActive(false);  // hide all picture cube for now
+        }
+
         text_fullscreen.text = tmptext;
         nextButton.gameObject.SetActive(true);
         img_instructFamil.SetActive(true);

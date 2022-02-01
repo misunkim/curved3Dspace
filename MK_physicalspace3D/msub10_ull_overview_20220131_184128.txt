@@ -1,4 +1,0 @@
-
-null
-all=0bytes
-0	20220131_174127	20220131_184128	start of exp
