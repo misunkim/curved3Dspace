@@ -99,6 +99,9 @@ public class mainSpatialTask_ver3 : MonoBehaviour
 
     private string currentLocalTime, currentGMTime;
     public string overviewFn, fnMemorySum;// text file for summary of start/end of experiment
+    float eyeheight=1f;
+    public float moveMargin=0.02f; //margin between the participant's location and the border of the surface (if they move too close to the end of the surface where glass fence is located, the view becomes very strange. So give some minimal margin). Prev experiment with the eyeheight of 1, I used 0.02. But for higher viewpoint, I should also increase the margin.
+
     IEnumerator Start()
     {
 
@@ -168,7 +171,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         string tmptext = fullURL + "\n" + PID + "\n" + GetAllMemoryInfo();
         yield return getTime();
         overviewFn = subId + "_" + subSuffix + "_overview_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
-        fnMemorySum = subId + "_" + subSuffix + "_memoryOverview.txt";
+        fnMemorySum = subId + "_" + subSuffix + "_memoryOverview"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss") +".txt";
         tmptext = tmptext + "\n" + Time.time.ToString("0") + deli + currentGMTime + deli + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + deli + "start of exp";
         StartCoroutine(save2file(overviewFn, tmptext));
 
@@ -212,9 +215,23 @@ public class mainSpatialTask_ver3 : MonoBehaviour
 
         distCollide = 1f;
 
-        moveConstraint = 4;// 1, driving; 3, flying; 4, driving with looking updown
+        moveConstraint = 1;// 1, driving; 3, flying; 4, driving with looking updown
         if (moveConstraint == 1 | moveConstraint == 4)
-            characterCamera.localPosition = new Vector3(0, 4, 0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
+        {   eyeheight=2.5f;
+            characterCamera.localPosition = new Vector3(0, 4*eyeheight, 0); // for driving condition, manipulate the eyeheight to address reviewer's point. Then I should also adjust the relative position of the guide arrow on the surface to match the eye height(in the scene view) 
+            if (eyeheight==1f) //original setting
+            {    guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,2f,0.9f);
+                moveMargin=0.02f;
+            }
+            if (eyeheight==2.5f) //to answer to reviewer's question regarding eyeheight. increase the distance from the eye from the ground
+            {   guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,5f,6f);
+                for (int i = 1; i <=8; i++)
+                    objList[i].transform.localScale=new Vector3(1,1,1); // I also increased the size of the object because at increased height, object looks too small and below the eye to touch
+                prop3D.localScale=new Vector3(2,2,2);  
+                moveMargin=0.03f; // I also slightly increased the minimal distance from the wall so that view doesn't look strange. 
+            }
+        }
+        
         if (moveConstraint == 3)
             characterCamera.localPosition = new Vector3(0, 0, 0); //when flying, it is more natural when eye and center of mass are aligned
 
@@ -314,7 +331,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         }
 
         string savefn = subId + "_" + subSuffix + "_objIdentity_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
-        string demostr = "sex" + sex + ",age" + age + ",isOpenEnv" + isOpenEnv + ",distType" + distType;
+        string demostr = "sex" + sex + ",age" + age + ",isOpenEnv" + isOpenEnv + ",distType" + distType+",eyeHeight"+eyeheight.ToString("F1");
 
         StartCoroutine(save2file(savefn, demostr + "\n" + strObjName));
 
@@ -408,7 +425,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
                 }
             }
             curr_norm2D = phy2DtoNorm2D(char2D);//extract the normalised 2D coordinates and direction from arrow on 2D
-            if (curr_norm2D.x < -0.98f | curr_norm2D.x > 0.98f | curr_norm2D.y < 0.02f | curr_norm2D.y > 0.98f) // if the movement makes subject outside the range of arena, move back to where they were
+            if (curr_norm2D.x < -1+moveMargin | curr_norm2D.x > 1-moveMargin | curr_norm2D.y < moveMargin | curr_norm2D.y > 1-moveMargin) // if the movement makes subject outside the range of arena, move back to where they were
             {
                 char2D.position = old_2Dpos;
                 curr_norm2D = phy2DtoNorm2D(char2D);
@@ -434,7 +451,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         {// forward only driving movement (without pitch)
             RaycastHit hit;
             Vector3 p1 = character.position + character.up * 0.2f; //capsule cast bottom position, depending on the hover distance between the character center and ground
-            Vector3 p2 = character.position + character.up * 1; //capsule cast top position 
+            Vector3 p2 = character.position + character.up * eyeheight; //capsule cast top position 
 
             if (Input.GetKey(KeyCode.UpArrow) & translateAllow)
             {
@@ -900,6 +917,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
 
         float inittime = Time.time;
         float timelimit = 5 * 60;// max 5min
+    //    timelimit = 50 * 60;// temporarily increase the timelimit for debugging purpose
 
         string savetext = "";
 
@@ -915,7 +933,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
                 placeGuideArrow(curr_norm2D, pos2DList[trial]);
             RaycastHit hit;
             Vector3 p1 = character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
-            Vector3 p2 = character.position + character.up * 1; //capsule cast top position 
+            Vector3 p2 = character.position + character.up * eyeheight; //capsule cast top position 
 
             Debug.DrawLine(p1, p1 + character.forward * 2, Color.red);
             Debug.DrawLine(p2, p2 + character.forward * 2, Color.blue);
@@ -1776,7 +1794,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
     {
         RaycastHit hit;
         Vector3 p1 = character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
-        Vector3 p2 = character.position + character.up * 1; //capsule cast top position 
+        Vector3 p2 = character.position + character.up * eyeheight; //capsule cast top position 
         Debug.DrawLine(p1, p1 + character.forward, Color.blue);
         Debug.DrawLine(p2, p2 + character.forward, Color.blue);
 
@@ -1850,6 +1868,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
             text_top.text = "Find the picture box and touch it";
             float inittime = Time.time;
             float timelimit1 = 60 * 3f;
+            //timelimit1=600*3f;//temporarily increase the timelimit for debugging
             string savetextTraj = "";
 
             int didHitCheck = 1;
