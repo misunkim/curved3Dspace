@@ -1370,7 +1370,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Drive on Convex surface (supple exp)
+  m_Text: 'Drive: convex surface (supple exp)'
 --- !u!222 &95388893
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3756,9 +3756,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: This is a demo for Kim & Doeller's experiment on a curved surface. You can
-    explore the virtual environment using different movement mode. Click the button
-    that you want to use.
+  m_Text: This is a demo for Kim & Doeller, "Adaptive cognitive maps for curved surfaces."
+    You can explore the virtual environment using different movement modes. Click
+    a button to choose the movement mode.
 --- !u!222 &469968325
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8681,7 +8681,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Drive with high eye point (supple exp)
+  m_Text: 'Drive: high eye height (supple exp)'
 --- !u!222 &1242561183
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -182,6 +182,7 @@ public class demoForWeb : MonoBehaviour {
 		StartCoroutine(propFollowingTask());
 	}
 	public void toMainMenu(){
+        StopAllCoroutines();
 		mainMenuUI.SetActive(true);
         guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,2f,0.9f);
         guideArrow3D.gameObject.SetActive(false);
