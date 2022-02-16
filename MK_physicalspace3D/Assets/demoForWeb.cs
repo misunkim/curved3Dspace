@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class demoForWeb : MonoBehaviour {
-	int moveConstraint;
+	public int moveConstraint;
 	bool rotateAllow, translateAllow;
 	public Transform char2D,character,characterCamera, prop2D, prop3D, guideArrow2D, guideArrow3D;
 
@@ -12,9 +12,11 @@ public class demoForWeb : MonoBehaviour {
 	public Vector3 curr_norm2D;
 	public GameObject mainMenuUI,surfConcave,surfConvex;
 
-	public Text text_top;
+	public Text text_top, text_bottom;
 	public int trial;
      float convexity=1; // 0, concave; 1, convex
+     float moveMargin=0.02f;
+     public Material[] skyboxMat=new Material[2];
 	// Use this for initialization
 	void Start () {
 		rotateSpeed=90;
@@ -23,7 +25,7 @@ public class demoForWeb : MonoBehaviour {
 		distCollide=1f;
 		rotateAllow=false; translateAllow=false;
 		text_top.text="";
-	  
+	  toMainMenu();
 	}
 	
 	// Update is called once per frame
@@ -49,12 +51,12 @@ public class demoForWeb : MonoBehaviour {
                 }
             }
             curr_norm2D = phy2DtoNorm2D(char2D);//extract the normalised 2D coordinates and direction from arrow on 2D
-            if (curr_norm2D.x < -0.98f | curr_norm2D.x > 0.98f | curr_norm2D.y < 0.02f | curr_norm2D.y > 0.98f) // if the movement makes subject outside the range of arena, move back to where they were
+
+            if (curr_norm2D.x < -1+moveMargin | curr_norm2D.x > 1-moveMargin | curr_norm2D.y < moveMargin | curr_norm2D.y > 1-moveMargin) // if the movement makes subject outside the range of arena, move back to where they were
             {
                 char2D.position = old_2Dpos;
                 curr_norm2D = phy2DtoNorm2D(char2D);
             }
-
             norm2DtoPhy3D(curr_norm2D, character);// place character on 3D location using the normalised 2D coordinate and facing direction 
         }
 		if (moveConstraint == 3) // fly movement
@@ -136,47 +138,66 @@ public class demoForWeb : MonoBehaviour {
                 }
             }
             curr_norm2D = phy2DtoNorm2D(char2D);//extract the normalised 2D coordinates and direction from arrow on 2D
-            if (curr_norm2D.x < -0.98f | curr_norm2D.x > 0.98f | curr_norm2D.y < 0.02f | curr_norm2D.y > 0.98f) // if the movement makes subject outside the range of arena, move back to where they were
+
+            if (curr_norm2D.x < -1+moveMargin | curr_norm2D.x > 1-moveMargin | curr_norm2D.y < moveMargin | curr_norm2D.y > 1-moveMargin) // if the movement makes subject outside the range of arena, move back to where they were
             {
                 char2D.position = old_2Dpos;
                 curr_norm2D = phy2DtoNorm2D(char2D);
             }
-
             norm2DtoPhy3D(curr_norm2D, character);// place character on 3D location using the normalised 2D coordinate and facing direction 
 
         }
-        if (Input.GetKeyDown(KeyCode.Alpha9)){
-            // switch to convex env
-            surfConvex.SetActive(true); surfConcave.SetActive(false);
-            convexity=1;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha0)){
-            // switch to concave env
-            surfConvex.SetActive(false); surfConcave.SetActive(true);
-            convexity=0;
-        }
-
-
     }
-	public void changeMoveMode(int moveMode){
-		Debug.Log("changeMode to "+moveMode);
-		moveConstraint=moveMode;
-		if (moveConstraint == 1 | moveConstraint == 4)
-        {    characterCamera.localPosition = new Vector3(0, 4, 0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
-			norm2DtoPhy2D(new Vector3(0, 0.5f, 45), char2D); //starting position of character
+	public void changeExpMode(int expMode){
+		Debug.Log("changeMode to "+expMode);
+		moveConstraint=expMode;
+		if (expMode==1){ //driving alone
+            moveConstraint=1; text_bottom.text="exp1:drive";
+        }        
+        if (expMode == 2) //driving+ view
+        {   moveConstraint=4; text_bottom.text="exp2:drive+look";
         }
-		if (moveConstraint == 3)
-		{    characterCamera.localPosition = new Vector3(0, 0, 0); //when flying, it is more natural when eye and center of mass are aligned
+		if (expMode == 3) //flying
+		{   moveConstraint=3; text_bottom.text="exp3:fly";
+            characterCamera.localPosition = new Vector3(0, 0, 0); //when flying, it is more natural when eye and center of mass are aligned
 			character.position=new Vector3(-6.5f,1f,-40);
 			character.eulerAngles=new Vector3(0,60,0);
 		}
+        if (expMode==4) // eye height change
+        {   moveConstraint=1; text_bottom.text="supple. exp: high eye";
+            characterCamera.localPosition=new Vector3(0,10,0);
+            prop3D.localScale=new Vector3(2,2,2);
+            moveMargin=0.03f;
+            guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,5f,6f);
+        }
+        if (expMode==5) // convex surf
+        {   moveConstraint=1; text_bottom.text="supple. exp: concave surf";
+            surfConvex.SetActive(true); surfConcave.SetActive(false);
+            convexity=1;
+            prop3D.Find("model").localPosition=new Vector3(0,-0.03f,0);
+            RenderSettings.skybox=skyboxMat[1];
+        }
 		mainMenuUI.SetActive(false);
     	translateAllow=true;rotateAllow=true;
 		StartCoroutine(propFollowingTask());
 	}
 	public void toMainMenu(){
 		mainMenuUI.SetActive(true);
+        guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,2f,0.9f);
+        guideArrow3D.gameObject.SetActive(false);
 		translateAllow=false;rotateAllow=false;
+        //move back to very basix setting (=Exp1)
+        surfConvex.SetActive(false); surfConcave.SetActive(true);
+        convexity=0;
+        prop3D.localScale=new Vector3(1,1,1);
+        moveMargin=0.02f;
+        characterCamera.localPosition = new Vector3(0, 4, 0); // for driving condition, I should give vertical offset to camera (otherwise camera is at th surface, and I can'see well)
+		
+        prop3D.Find("model").localPosition=new Vector3(0,0.1f,0);
+        norm2DtoPhy2D(new Vector3(0, 0.5f, 45), char2D); //starting position of character
+       //set skyboxe
+       RenderSettings.skybox=skyboxMat[0];
+       moveConstraint=1;
 	}
 	IEnumerator propFollowingTask()
     {
@@ -197,7 +218,10 @@ public class demoForWeb : MonoBehaviour {
 
         norm2DtoPhy2D(new Vector3(0, 0.7f, 180), char2D); //starting position of character
 
-        text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+        if (moveConstraint==4 | moveConstraint==3)
+            text_top.text = "Find the traffic cone and move to it (rotation: arrow keys, move: W/S)";
+        if (moveConstraint==1)
+            text_top.text = "Find the traffic cone and move to it (rotation: left/right, move: up/down)";
 
         float inittime = Time.time;
  
@@ -206,7 +230,8 @@ public class demoForWeb : MonoBehaviour {
         {
             norm2DtoPhy2D(pos2DList[trial], prop2D); // place the prop (e.g. traffic cone) to predefined location
             norm2DtoPhy3D(pos2DList[trial], prop3D); // place the prop (e.g. traffic cone) to predefined location
-           
+            if (moveConstraint == 1)
+                placeGuideArrow(curr_norm2D, pos2DList[trial]);
 		    RaycastHit hit;
             Vector3 p1 = character.position; //capsule cast bottom position, depending on the hover distance between the character center and ground
             Vector3 p2 = character.position + character.up * 1; //capsule cast top position 

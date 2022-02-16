@@ -116,7 +116,8 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         deli = "\t";
         envType = 4;//270deg cylinder
         isOpenEnv = 1;
-        distType = "Path";//Euclide of Path
+        distType = "Euclid";//Euclide of Path
+        eyeheight=1f;
         //   EnvironmentToggle(isOpenEnv, 0);
 
         string tmp1 = "abcde"; string tmp2 = "xyz";
@@ -124,9 +125,9 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         Debug.Log("tmp2=" + tmp2 + "_" + tmp2.Substring(1, 2));
         string PID = "null";
         string fullURL = "";
-        startTrial = 10;
+        startTrial = 1;
         string tmpstartTrial = "";
-        string expSeq = "FromBeginning";//FromBeginning, FromObjLocTest,FromDistInstruct,From2AFC, FromSlider
+        string expSeq = "FromDistInstruct";//FromBeginning, FromObjLocTest,FromDistInstruct,From2AFC, FromSlider
 #if UNITY_WEBGL && !UNITY_EDITOR
 		// extract Prolific ID from URL
 		var parameters=URLParameters.GetSearchParameters();
@@ -217,8 +218,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
 
         moveConstraint = 1;// 1, driving; 3, flying; 4, driving with looking updown
         if (moveConstraint == 1 | moveConstraint == 4)
-        {   eyeheight=2.5f;
-            characterCamera.localPosition = new Vector3(0, 4*eyeheight, 0); // for driving condition, manipulate the eyeheight to address reviewer's point. Then I should also adjust the relative position of the guide arrow on the surface to match the eye height(in the scene view) 
+        {   characterCamera.localPosition = new Vector3(0, 4*eyeheight, 0); // for driving condition, manipulate the eyeheight to address reviewer's point. Then I should also adjust the relative position of the guide arrow on the surface to match the eye height(in the scene view) 
             if (eyeheight==1f) //original setting
             {    guideArrow3D.Find("arrowshape").localPosition=new Vector3(0,2f,0.9f);
                 moveMargin=0.02f;
@@ -238,6 +238,7 @@ public class mainSpatialTask_ver3 : MonoBehaviour
         curr_norm2D = phy2DtoNorm2D(char2D);
         yield return initialiseObjList();
 
+       // yield return propFollowingTask();
        yield return experimentSequence(expSeq);
 
         //	yield return triangleCompletionTask();
